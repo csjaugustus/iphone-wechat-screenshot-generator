@@ -441,7 +441,7 @@ sideMargin = 25
 fixedBubbleWidth = 595
 maxTextWidth = fixedBubbleWidth - 50
 bubbleTopMargin = 17
-bubbleLineMargin = 20
+bubbleLineMargin = 8
 timeMarkerHeight = 34
 maxChatHeight = 1434
 

@@ -6,6 +6,8 @@ from tkinter import ttk
 from PIL import Image, ImageTk
 from datetime import datetime
 import pyperclip
+from io import BytesIO
+import win32clipboard
 
 def getTimestamp():
 	now = datetime.now()
@@ -79,7 +81,7 @@ def addEntry():
 		clearButton.config(state=tk.NORMAL)
 		deleteButton.config(state=tk.NORMAL)
 		saveButton.config(state=tk.NORMAL)
-		saveIndividualButton.config(state=tk.NORMAL)
+		copy_screenshot_button.config(state=tk.NORMAL)
 
 		updatePreview()
 
@@ -170,7 +172,7 @@ def deleteEntry():
 				clearButton.config(state=tk.DISABLED)
 				deleteButton.config(state=tk.DISABLED)
 				saveButton.config(state=tk.DISABLED)
-				saveIndividualButton.config(state=tk.DISABLED)
+				copy_screenshot_button.config(state=tk.DISABLED)
 
 		updatePreview()
 
@@ -194,7 +196,7 @@ def setTitle():
 			clearButton.config(state=tk.DISABLED)
 			deleteButton.config(state=tk.DISABLED)
 			saveButton.config(state=tk.DISABLED)
-			saveIndividualButton.config(state=tk.DISABLED)
+			copy_screenshot_button.config(state=tk.DISABLED)
 
 def set_system_time():
 	time = timeEntry.get()
@@ -209,21 +211,21 @@ def set_system_time():
 			clearButton.config(state=tk.DISABLED)
 			deleteButton.config(state=tk.DISABLED)
 			saveButton.config(state=tk.DISABLED)
-			saveIndividualButton.config(state=tk.DISABLED)
+			copy_screenshot_button.config(state=tk.DISABLED)
 
-def saveIndividual():
-	selectedIndex = lb.curselection()
-	if not selectedIndex:
-		popupMessage("Nothing selected", "Please select an entry to save.")
-	else:
-		selectedIndex = selectedIndex[0]
-		if canvas.mode == "light":
-			toSave = canvas.entries[selectedIndex]
-		elif canvas.mode == "dark":
-			toSave = canvas.entriesDark[selectedIndex]
-		d = f"output\\B{selectedIndex}-{getTimestamp()}.png"
-		toSave.save(d)
-		popupMessage("Successful", f"Saved under {d}.")
+def copy_screenshot():
+	def send_to_clipboard(clip_type, data):
+	    win32clipboard.OpenClipboard()
+	    win32clipboard.EmptyClipboard()
+	    win32clipboard.SetClipboardData(clip_type, data)
+	    win32clipboard.CloseClipboard()
+
+	output = BytesIO()
+	canvas.get().convert("RGB").save(output, "BMP")
+	data = output.getvalue()[14:]
+	output.close()
+
+	send_to_clipboard(win32clipboard.CF_DIB, data)
 
 def openDir():
 	os.startfile(os.getcwd())
@@ -254,7 +256,7 @@ def clear():
 	clearButton.config(state=tk.DISABLED)
 	deleteButton.config(state=tk.DISABLED)
 	saveButton.config(state=tk.DISABLED)
-	saveIndividualButton.config(state=tk.DISABLED)
+	copy_screenshot_button.config(state=tk.DISABLED)
 
 def changeMode(event):
 	if canvas.mode == "light":
@@ -300,7 +302,7 @@ timeEntry = ttk.Entry(root, width=10)
 lb = tk.Listbox(root, height=35, width=50)
 addButton = ttk.Button(root, text="Add", command=addEntry)
 deleteButton = ttk.Button(root, text="Delete", command=deleteEntry)
-saveIndividualButton = ttk.Button(root, text="Save Selected Bubble", command=saveIndividual)
+copy_screenshot_button = ttk.Button(root, text="Copy Screenshot", command=copy_screenshot)
 openDirectoryButton = ttk.Button(root, image=folderIcon, command=openDir)
 openDirectoryButton.image = folderIcon
 clearButton = ttk.Button(root, text="Clear", command=clear)
@@ -311,7 +313,7 @@ darkMode.bind('<Button-1>', changeMode)
 clearButton.config(state=tk.DISABLED)
 deleteButton.config(state=tk.DISABLED)
 saveButton.config(state=tk.DISABLED)
-saveIndividualButton.config(state=tk.DISABLED)
+copy_screenshot_button.config(state=tk.DISABLED)
 
 imagePreviewWidget.grid(row=2, column=0, columnspan=2)
 darkMode.grid(row=0,column=0, columnspan=2, padx=10)
@@ -325,7 +327,7 @@ lb.grid(row=2,column=2, columnspan=4)
 saveButton.grid(row=3,column=1, padx=10, pady=10)
 addButton.grid(row=3, column=2, padx=10, pady=10)
 deleteButton.grid(row=3,column=3, padx=10, pady=10)
-saveIndividualButton.grid(row=3,column=4,columnspan=2, padx=10, pady=10)
+copy_screenshot_button.grid(row=3,column=4,columnspan=2, padx=10, pady=10)
 openDirectoryButton.grid(row=0,column=5)
 clearButton.grid(row=3,column=0, padx=10, pady=10)
 
