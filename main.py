@@ -277,7 +277,7 @@ if "output" not in os.listdir():
 
 root = tk.Tk()
 root.title("WeChat Screenshot Generator")
-icon = Image.open("files\\wechat-logo.png")
+icon = Image.open("files\\wechat.png")
 icon = ImageTk.PhotoImage(icon)
 root.iconphoto(True, icon)
 root.tk.call("source", "sun-valley.tcl")
