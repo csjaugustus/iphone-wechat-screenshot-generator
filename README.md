@@ -30,7 +30,7 @@ Save your square avatars under files\avatars in either .png or .jpg format. They
 
 ## Saving Images
 <img src="https://user-images.githubusercontent.com/61149391/210512702-ab926b27-e1fc-4f11-bf7b-d4c1a270ba61.png" width=50% height=50%>
-You can choose to either save the entire screenshot or only the selected speech bubble (or time marker). Outputs will be saved under the "output" folder, which will be automatically created.
+You can choose to either save the entire screenshot. Outputs will be saved under the "output" folder, which will be automatically created. Alternatively, you can choose to "copy screenshot", which will copy to clipboard non-blank parts of the screenshot.
 
 ## Dark Mode Support
 <img src="https://user-images.githubusercontent.com/61149391/210512615-7eee7bcf-1e6a-40c9-9fdd-488e1ec6b1b3.png" width=50% height=50%>
