@@ -7,6 +7,7 @@ A Tkinter GUI program written to generate WeChat screenshots. Offers support for
 * [Adding an Entry](#adding-an-entry)
 * [Saving Images](#saving-images)
 * [Dark Mode Support](#dark-mode-support)
+* [Compiling to EXE](#compiling-to-exe)
 
 ## Installation
 ```
@@ -34,3 +35,13 @@ You can choose to either save the entire screenshot or only the selected speech 
 ## Dark Mode Support
 <img src="https://user-images.githubusercontent.com/61149391/210512615-7eee7bcf-1e6a-40c9-9fdd-488e1ec6b1b3.png" width=50% height=50%>
 You can toggle between dark & light mode at any time.
+
+## Compiling to EXE
+To compile this to EXE using PyInstaller, do the following steps:
+
+1. Navigate to this directory.
+2. In the command line, type the following:
+```
+$ pyinstaller --icon "wechat.ico" main.py
+```
+3. In the folder generated in `dist`, put in `files`, `theme`, `sun-valley.tcl`.
