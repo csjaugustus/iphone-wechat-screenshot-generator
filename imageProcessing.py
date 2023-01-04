@@ -5,15 +5,16 @@ import os
 class Screenshot():
 	def __init__(self, mode):
 		self.title = ""
-		self.time = ""
+		self.system_time = ""
 		self.mode = mode
 		self.setMode()
 		self.canvas = Image.new('RGB', (w, h), color=self.bg)
 		self.canvas.paste(self.system_time_bar, (0,0))
-		self.canvas.paste(self.titleBar, (0,97))
+		self.canvas.paste(self.titleBar, (0,system_time_bar_height))
 		self.canvas.paste(self.inputBox, (0,1618))
 		self.entries = []
 		self.entriesDark = []
+		self.content_height = 0
 
 	def setMode(self):
 		self.rightText = "#1c1c1c"
@@ -50,7 +51,7 @@ class Screenshot():
 
 
 	def setTitle(self, title):
-		self.canvas.paste(self.titleBar, (0,97))
+		self.canvas.paste(self.titleBar, (0,system_time_bar_height))
 		if title:
 			draw = ImageDraw.Draw(self.canvas)
 			tw, th = getTextSize(title, title=True)
@@ -101,14 +102,14 @@ class Screenshot():
 		del self.entries[indx]
 		del self.entriesDark[indx]
 		blank = Image.new('RGB', (w, maxChatHeight), color=self.bg)
-		self.canvas.paste(blank, (0, 184))
+		self.canvas.paste(blank, (0, top_part_height))
 		self.update()
 
 	def update(self, changeMode=False):
 		if changeMode:
 			self.canvas = Image.new('RGB', (w, h), color=self.bg)
 			self.canvas.paste(self.system_time_bar, (0,0))
-			self.canvas.paste(self.titleBar, (0,97))
+			self.canvas.paste(self.titleBar, (0,system_time_bar_height))
 			self.canvas.paste(self.inputBox, (0,1618))
 			if self.title:
 				self.setTitle(self.title)
@@ -126,10 +127,13 @@ class Screenshot():
 					img = self.get_concat_v(img, temp[i])
 			if img.size[1] > maxChatHeight:
 				img = img.crop((0, img.size[1]-maxChatHeight, w, img.size[1]))
-			self.canvas.paste(img, (0,184))
+				self.content_height = h
+			else:
+				self.content_height = top_part_height + img.size[1] + bubbleTopMargin
+			self.canvas.paste(img, (0,top_part_height))
 		else:
 			blank = Image.new('RGB', (w, maxChatHeight), color=self.bg)
-			self.canvas.paste(blank, (0,184))
+			self.canvas.paste(blank, (0,top_part_height))
 
 	def createBubble(self, avatar, text, side):
 		def breakWord(word):
@@ -422,9 +426,6 @@ def loadAvatar(avypath):
 	avatar = avatar.resize((86,86))
 	return avatar
 
-# 63,38
-# system time dark colour fcfcfc
-# system time light colour 070707
 #fonts
 enTitleFont = ImageFont.truetype('files\\sf-ui-display-semibold-58646eddcae92.otf', 32)
 enTextFont = ImageFont.truetype('files\\sf-ui-display-medium-58646be638f96.otf', 32)
@@ -444,6 +445,9 @@ bubbleTopMargin = 17
 bubbleLineMargin = 8
 timeMarkerHeight = 34
 maxChatHeight = 1434
+chat_title_height = 87
+system_time_bar_height = 97
+top_part_height = chat_title_height + system_time_bar_height
 
 #images
 titlebar = Image.open('files\\chattitle.png')

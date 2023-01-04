@@ -221,7 +221,9 @@ def copy_screenshot():
 	    win32clipboard.CloseClipboard()
 
 	output = BytesIO()
-	canvas.get().convert("RGB").save(output, "BMP")
+	img = canvas.get()
+	cropped_img = img.crop((0, 0, w, canvas.content_height))
+	cropped_img.convert("RGB").save(output, "BMP")
 	data = output.getvalue()[14:]
 	output.close()
 
