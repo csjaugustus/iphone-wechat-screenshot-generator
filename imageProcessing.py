@@ -428,7 +428,7 @@ def loadAvatar(avypath):
 
 #fonts
 enTitleFont = ImageFont.truetype('files\\sf-ui-display-semibold-58646eddcae92.otf', 32)
-enTextFont = ImageFont.truetype('files\\sf-ui-display-medium-58646be638f96.otf', 32)
+enTextFont = ImageFont.truetype('files\\SFPRODISPLAYREGULAR.OTF', 32)
 cnTitleFont = ImageFont.truetype('files\\PingFang Bold.ttf', 32)
 cnTextFont = ImageFont.truetype('files\\PingFang Medium.ttf', 32)
 timeFont = ImageFont.truetype('files\\sf-ui-display-medium-58646be638f96.otf', 28)
