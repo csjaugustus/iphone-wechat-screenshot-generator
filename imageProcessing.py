@@ -7,55 +7,53 @@ class Screenshot():
 		self.title = ""
 		self.system_time = ""
 		self.mode = mode
-		self.setMode()
-		self.canvas = Image.new('RGB', (w, h), color=self.bg)
+		self.set_mode()
+		self.canvas = Image.new('RGB', (w, h), color=self.bg_colour)
 		self.canvas.paste(self.system_time_bar, (0,0))
-		self.canvas.paste(self.titleBar, (0,system_time_bar_height))
-		self.canvas.paste(self.inputBox, (0,1618))
+		self.canvas.paste(self.title_bar, (0,system_time_bar_height))
+		self.canvas.paste(self.input_box, (0,1618))
 		self.entries = []
-		self.entriesDark = []
+		self.entries_dark = []
 		self.content_height = 0
 
-	def setMode(self):
-		self.rightText = "#1c1c1c"
+	def set_mode(self):
+		self.right_text = "#1c1c1c"
 
 		if self.mode == "light":
-			self.leftBubbleBase = '#ffffff'
-			self.bg = '#ededed'
-			self.leftText = '#1c1c1c'
-			self.timeColour = '#adadad'
+			self.left_bubble_base_colour = '#ffffff'
+			self.bg_colour = '#ededed'
+			self.left_text_colour = '#1c1c1c'
+			self.timestamp_colour = '#adadad'
 			self.system_time_colour = '#070707'
+			self.right_bubble_base_colour = '#97ec6a'
 
-			self.titleBar = titlebar
-			self.inputBox = inputbox
-			self.leftArrow = whitearrow
-			self.rightArrow = greenarrow
-			self.rightBubbleBase = '#97ec6a'
-
+			self.title_bar = title_bar
+			self.input_box = input_box
+			self.left_arrow = whitearrow
+			self.right_arrow = greenarrow
 			self.system_time_bar = system_time_bar
 
 		elif self.mode == "dark":
-			self.leftBubbleBase = '#2c2c2c'
-			self.bg = '#111111'
-			self.leftText = '#c9c9c9'
-			self.timeColour = '#858585'
+			self.left_bubble_base_colour = '#2c2c2c'
+			self.bg_colour = '#111111'
+			self.left_text_colour = '#c9c9c9'
+			self.timestamp_colour = '#858585'
 			self.system_time_colour = '#fcfcfc'
+			self.right_bubble_base_colour = '#42b16c'
 
-			self.titleBar = titlebarDark
-			self.inputBox = inputboxDark
-			self.leftArrow = darkarrow
-			self.rightArrow = greenarrowDark
-			self.rightBubbleBase = '#42b16c'
-
+			self.title_bar = title_bar_dark
+			self.input_box = input_box_dark
+			self.left_arrow = darkarrow
+			self.right_arrow = greenarrowDark
 			self.system_time_bar = system_time_bar_dark
 
 
-	def setTitle(self, title):
-		self.canvas.paste(self.titleBar, (0,system_time_bar_height))
+	def set_title(self, title):
+		self.canvas.paste(self.title_bar, (0,system_time_bar_height))
 		if title:
 			draw = ImageDraw.Draw(self.canvas)
-			tw, th = getTextSize(title, title=True)
-			drawText(draw, (w-tw)/2, 118, title, self.leftText, title=True)
+			tw, th = get_text_size(title, title=True)
+			draw_text(draw, (w-tw)/2, 118, title, self.left_text_colour, title=True)
 		self.title = title
 
 	def set_system_time(self, time):
@@ -65,29 +63,29 @@ class Screenshot():
 			draw.text((63, 38), time, font=system_time_font, fill=self.system_time_colour)
 			self.system_time = time
 
-	def addTimeMarker(self, t):
-		def createTimeMarker():
-			tCanvas = Image.new('RGB', (w, timeMarkerHeight + 2 * topMargin), color=self.bg)
-			draw = ImageDraw.Draw(tCanvas)
-			xPos = (w - draw.textsize(t, font=timeFont)[0])/2
-			draw.text((xPos, topMargin), t, font=timeFont, fill=self.timeColour)
-			return tCanvas
+	def add_timestamp(self, t):
+		def create_timestamp():
+			timestamp_canvas = Image.new('RGB', (w, timestamp_height + 2 * top_margin), color=self.bg_colour)
+			draw = ImageDraw.Draw(timestamp_canvas)
+			x_pos = (w - draw.textsize(t, font=time_font)[0])/2
+			draw.text((x_pos, top_margin), t, font=time_font, fill=self.timestamp_colour)
+			return timestamp_canvas
 
 		if self.mode == "light":
-			self.entries.append(createTimeMarker())
+			self.entries.append(create_timestamp())
 			self.mode = "dark"
-			self.setMode()
-			self.entriesDark.append(createTimeMarker())
+			self.set_mode()
+			self.entries_dark.append(create_timestamp())
 			self.mode = "light"
-			self.setMode()
+			self.set_mode()
 
 		elif self.mode == "dark":
-			self.entriesDark.append(createTimeMarker())
+			self.entries_dark.append(create_timestamp())
 			self.mode = "light"
-			self.setMode()
-			self.entries.append(createTimeMarker())
+			self.set_mode()
+			self.entries.append(create_timestamp())
 			self.mode = "dark"
-			self.setMode()
+			self.set_mode()
 
 		self.update()
 
@@ -95,24 +93,24 @@ class Screenshot():
 		avypath = f"files\\avatars\\{avyName}"
 		avatar = Image.open(avypath)
 		avatar = avatar.resize((86,86))
-		self.createBubble(avatar, text, side)
+		self.create_bubble(avatar, text, side)
 		self.update()
 
 	def delete(self, indx):
 		del self.entries[indx]
-		del self.entriesDark[indx]
-		blank = Image.new('RGB', (w, maxChatHeight), color=self.bg)
+		del self.entries_dark[indx]
+		blank = Image.new('RGB', (w, max_chat_height), color=self.bg_colour)
 		self.canvas.paste(blank, (0, top_part_height))
 		self.update()
 
-	def update(self, changeMode=False):
-		if changeMode:
-			self.canvas = Image.new('RGB', (w, h), color=self.bg)
+	def update(self, change_mode=False):
+		if change_mode:
+			self.canvas = Image.new('RGB', (w, h), color=self.bg_colour)
 			self.canvas.paste(self.system_time_bar, (0,0))
-			self.canvas.paste(self.titleBar, (0,system_time_bar_height))
-			self.canvas.paste(self.inputBox, (0,1618))
+			self.canvas.paste(self.title_bar, (0,system_time_bar_height))
+			self.canvas.paste(self.input_box, (0,1618))
 			if self.title:
-				self.setTitle(self.title)
+				self.set_title(self.title)
 			if self.system_time:
 				self.set_system_time(self.system_time)
 
@@ -120,30 +118,30 @@ class Screenshot():
 			if self.mode == "light":
 				temp = self.entries
 			elif self.mode == "dark":
-				temp = self.entriesDark
+				temp = self.entries_dark
 			img = temp[0]
 			if len(temp) > 1:
 				for i in range(1, len(temp)):
 					img = self.get_concat_v(img, temp[i])
-			if img.size[1] > maxChatHeight:
-				img = img.crop((0, img.size[1]-maxChatHeight, w, img.size[1]))
+			if img.size[1] > max_chat_height:
+				img = img.crop((0, img.size[1]-max_chat_height, w, img.size[1]))
 				self.content_height = h
 			else:
-				self.content_height = top_part_height + img.size[1] + bubbleTopMargin
+				self.content_height = top_part_height + img.size[1] + bubble_top_margin
 			self.canvas.paste(img, (0,top_part_height))
 		else:
-			blank = Image.new('RGB', (w, maxChatHeight), color=self.bg)
+			blank = Image.new('RGB', (w, max_chat_height), color=self.bg_colour)
 			self.canvas.paste(blank, (0,top_part_height))
 
-	def createBubble(self, avatar, text, side):
-		def breakWord(word):
+	def create_bubble(self, avatar, text, side):
+		def break_word(word):
 			lst = []
 			while word:
 				indx = 0
 				for i in range(1, len(word)+1):
 					part = word[:i]
-					width = getTextSize(part)[0]
-					if width <= maxTextWidth:
+					width = get_text_size(part)[0]
+					if width <= max_text_width:
 						indx = i
 					else:
 						break
@@ -154,131 +152,131 @@ class Screenshot():
 		#break long words
 		lines = []
 		temp = text.split()
-		splitText = []
+		split_text = []
 		for word in temp:
-			if getTextSize(word)[0] <= maxTextWidth:
-				splitText.append(word)
+			if get_text_size(word)[0] <= max_text_width:
+				split_text.append(word)
 			else:
-				splitText += breakWord(word)
+				split_text += break_word(word)
 
 		#split text into lines
 		indx = 0
-		while splitText:
-			for i in range(1,len(splitText)+1):
-				currentLine = " ".join(splitText[:i])
-				if getTextSize(currentLine)[0] <= maxTextWidth:
+		while split_text:
+			for i in range(1,len(split_text)+1):
+				current_line = " ".join(split_text[:i])
+				if get_text_size(current_line)[0] <= max_text_width:
 					indx = i
 				else:
-					if not pattern.findall(splitText[i-1]): #break chinese character clusters
-						temp = breakWord(currentLine)
+					if not pattern.findall(split_text[i-1]): #break chinese character clusters
+						temp = break_word(current_line)
 						if len(temp) > 1:
 							last = temp[1]
-							first = splitText[i-1][:-len(last)]
-							splitText[i-2] = splitText[i-2] + " " + first
-							splitText[i-1] = last
+							first = split_text[i-1][:-len(last)]
+							split_text[i-2] = split_text[i-2] + " " + first
+							split_text[i-1] = last
 					break
-			line = " ".join(splitText[:indx])
-			splitText = splitText[indx:]
+			line = " ".join(split_text[:indx])
+			split_text = split_text[indx:]
 			lines.append(line)
 
-		textHeight = 0
+		text_height = 0
 		for l in lines:
-			th = getTextSize(l)[1]
-			textHeight += th
-		h = 2 * topMargin + 2 * bubbleTopMargin + (len(lines)-1) * bubbleLineMargin + textHeight
+			th = get_text_size(l)[1]
+			text_height += th
+		h = 2 * top_margin + 2 * bubble_top_margin + (len(lines)-1) * bubble_line_margin + text_height
 
 		#round avatar mask
 		corner = Image.new('RGBA', (10,10), (0,0,0,0))
-		cornerDraw = ImageDraw.Draw(corner)
-		cornerDraw.pieslice((0,0, 20, 20), 180, 270, fill="black")
+		corner_draw = ImageDraw.Draw(corner)
+		corner_draw.pieslice((0,0, 20, 20), 180, 270, fill="black")
 		sq = Image.new('RGBA', (86,86), "black")
 		sq.paste(corner, (0,0))
 		sq.paste(corner.rotate(90), (0, 86-10))
 		sq.paste(corner.rotate(180), (86-10, 86-10))
 		sq.paste(corner.rotate(270), (86-10, 0))
 		
-		longestLineLength = max(getTextSize(l)[0] for l in lines)
-		if longestLineLength <= 535:
-			bubbleWidth = longestLineLength + 2 * 30
-			bubbleSideMargin = 30
+		longest_line_length = max(get_text_size(l)[0] for l in lines)
+		if longest_line_length <= 535:
+			bubble_width = longest_line_length + 2 * 30
+			bubble_side_margin = 30
 		else:
-			bubbleWidth = fixedBubbleWidth
-			bubbleSideMargin = (fixedBubbleWidth - max(getTextSize(l)[0] for l in lines))/2
+			bubble_width = fixed_bubble_width
+			bubble_side_margin = (fixed_bubble_width - max(get_text_size(l)[0] for l in lines))/2
 
-		bubbleHeight = 2 * bubbleTopMargin + (len(lines)-1) * bubbleLineMargin + textHeight + 7
+		bubble_height = 2 * bubble_top_margin + (len(lines)-1) * bubble_line_margin + text_height + 7
 
 		#round bubble corners
-		bubbleMask = Image.new('RGBA', (bubbleWidth, bubbleHeight), "black")
-		bubbleMask.paste(corner, (0,0))
-		bubbleMask.paste(corner.rotate(90), (0, bubbleHeight-10))
-		bubbleMask.paste(corner.rotate(180), (bubbleWidth-10, bubbleHeight-10))
-		bubbleMask.paste(corner.rotate(270), (bubbleWidth-10, 0))
+		bubble_mask = Image.new('RGBA', (bubble_width, bubble_height), "black")
+		bubble_mask.paste(corner, (0,0))
+		bubble_mask.paste(corner.rotate(90), (0, bubble_height-10))
+		bubble_mask.paste(corner.rotate(180), (bubble_width-10, bubble_height-10))
+		bubble_mask.paste(corner.rotate(270), (bubble_width-10, 0))
 
-		def getUserCanvas():
-			userCanvas = Image.new('RGB', (w, h), color=self.bg)
+		def get_user_canvas():
+			user_canvas = Image.new('RGB', (w, h), color=self.bg_colour)
 			if side == "left":
-				userCanvas.paste(avatar, (sideMargin, topMargin), mask=sq)
-				bubbleColour = self.leftBubbleBase
-				textColour = self.leftText
+				user_canvas.paste(avatar, (side_margin, top_margin), mask=sq)
+				bubble_colour = self.left_bubble_base_colour
+				text_colour = self.left_text_colour
 			elif side == "right":
-				userCanvas.paste(avatar, (w-sideMargin-86, topMargin), mask=sq)
-				bubbleColour = self.rightBubbleBase
-				textColour = self.rightText
+				user_canvas.paste(avatar, (w-side_margin-86, top_margin), mask=sq)
+				bubble_colour = self.right_bubble_base_colour
+				text_colour = self.right_text
 
-			bubble = Image.new('RGB', (bubbleWidth, bubbleHeight), color=bubbleColour)
-			bubbleCanvas = Image.new('RGB', (bubbleWidth, bubbleHeight), color=self.bg)
-			bubbleCanvas.paste(bubble, (0,0), mask=bubbleMask)
+			bubble = Image.new('RGB', (bubble_width, bubble_height), color=bubble_colour)
+			bubble_canvas = Image.new('RGB', (bubble_width, bubble_height), color=self.bg_colour)
+			bubble_canvas.paste(bubble, (0,0), mask=bubble_mask)
 
-			bubbleDraw = ImageDraw.Draw(bubbleCanvas)
+			bubble_draw = ImageDraw.Draw(bubble_canvas)
 			
 			yincrement = 0
 
 			for l in lines:
-				drawText(bubbleDraw, bubbleSideMargin, bubbleTopMargin+yincrement, l, textColour)
-				yincrement += bubbleLineMargin + getTextSize(l)[1]
+				draw_text(bubble_draw, bubble_side_margin, bubble_top_margin+yincrement, l, text_colour)
+				yincrement += bubble_line_margin + get_text_size(l)[1]
 
 			if side == "left":
-				speechBubble = self.get_concat_h(self.leftArrow, bubbleCanvas)
-				userCanvas.paste(speechBubble, (sideMargin+86, topMargin))
+				speech_bubble = self.get_concat_h(self.left_arrow, bubble_canvas)
+				user_canvas.paste(speech_bubble, (side_margin+86, top_margin))
 			elif side == "right":
-				speechBubble = self.get_concat_h(bubbleCanvas, self.rightArrow)
-				arrowWidth = greenarrow.size[0]
-				userCanvas.paste(speechBubble, (w-bubbleWidth-2*arrowWidth-86, topMargin))
-			return userCanvas
+				speech_bubble = self.get_concat_h(bubble_canvas, self.right_arrow)
+				arrow_width = greenarrow.size[0]
+				user_canvas.paste(speech_bubble, (w-bubble_width-2*arrow_width-86, top_margin))
+			return user_canvas
 
 		if self.mode == "light":
-			self.entries.append(getUserCanvas())
+			self.entries.append(get_user_canvas())
 			self.mode = "dark"
-			self.setMode()
-			self.entriesDark.append(getUserCanvas())
+			self.set_mode()
+			self.entries_dark.append(get_user_canvas())
 			self.mode = "light"
-			self.setMode()
+			self.set_mode()
 
 		elif self.mode == "dark":
-			self.entriesDark.append(getUserCanvas())
+			self.entries_dark.append(get_user_canvas())
 			self.mode = "light"
-			self.setMode()
-			self.entries.append(getUserCanvas())
+			self.set_mode()
+			self.entries.append(get_user_canvas())
 			self.mode = "dark"
-			self.setMode()
+			self.set_mode()
 
 
 	def get(self):
 		return self.canvas
 
 	def get_concat_h(self, im1, im2):
-	    dst = Image.new('RGB', (im1.width + im2.width, max(im1.height,im2.height)), color=self.bg)
+	    dst = Image.new('RGB', (im1.width + im2.width, max(im1.height,im2.height)), color=self.bg_colour)
 	    dst.paste(im1, (0, 0))
 	    dst.paste(im2, (im1.width, 0))
 	    return dst
 
 	def get_concat_v(self, im1, im2):
-	    dst = Image.new('RGB', (max(im1.width, im2.width), im1.height + im2.height), color=self.bg)
+	    dst = Image.new('RGB', (max(im1.width, im2.width), im1.height + im2.height), color=self.bg_colour)
 	    dst.paste(im1, (0, 0))
 	    dst.paste(im2, (0, im1.height))
 	    return dst
 
-def sortText(text):
+def sort_text(text):
 	seq = []
 
 	matches = pattern.findall(text)
@@ -305,7 +303,7 @@ def sortText(text):
 
 	return seq	
 
-def getTextSize(text, title=False):
+def get_text_size(text, title=False):
 	new = Screenshot("light")
 	canvas = new.get()
 	draw = ImageDraw.Draw(canvas)
@@ -313,151 +311,151 @@ def getTextSize(text, title=False):
 		return (0, 0)
 
 	w, h = 0, 0
-	seq = sortText(text)
+	seq = sort_text(text)
 
 	if pattern.findall(seq[0]): #first element is not chinese
 		if title:
-			ft = enTitleFont
+			ft = en_title_font
 
 			for el in seq:
 				tw, th = draw.textsize(el, font=ft)
 				w += tw
 				if th > h:
 					h = th
-				if ft == enTitleFont:
-					ft = cnTitleFont
+				if ft == en_title_font:
+					ft = cn_title_font
 				else:
-					ft = enTitleFont
+					ft = en_title_font
 
 		else:
-			ft = enTextFont
+			ft = en_text_font
 
 			for el in seq:
 				tw, th = draw.textsize(el, font=ft)
 				w += tw
 				if th > h:
 					h = th
-				if ft == enTextFont:
-					ft = cnTextFont
+				if ft == en_text_font:
+					ft = cn_text_font
 				else:
-					ft = enTextFont
+					ft = en_text_font
 	else:
 		if title:
-			ft = cnTitleFont
+			ft = cn_title_font
 
 			for el in seq:
 				tw, th = draw.textsize(el, font=ft)
 				w += tw
 				if th > h:
 					h = th
-				if ft == enTitleFont:
-					ft = cnTitleFont
+				if ft == en_title_font:
+					ft = cn_title_font
 				else:
-					ft = enTitleFont
+					ft = en_title_font
 
 		else:
-			ft = cnTextFont
+			ft = cn_text_font
 
 			for el in seq:
 				tw, th = draw.textsize(el, font=ft)
 				w += tw
 				if th > h:
 					h = th
-				if ft == enTextFont:
-					ft = cnTextFont
+				if ft == en_text_font:
+					ft = cn_text_font
 				else:
-					ft = enTextFont
+					ft = en_text_font
 
 	return (w, h)
 
-def drawText(imgDrawObj, xcoord, ycoord, text, fill, title=False):
-	draw = imgDrawObj
-	seq = sortText(text)
+def draw_text(img_draw_obj, xcoord, ycoord, text, fill, title=False):
+	draw = img_draw_obj
+	seq = sort_text(text)
 
 	if pattern.findall(seq[0]): #first element is not chinese
 		if title:
-			ft = enTitleFont
+			ft = en_title_font
 
 			for el in seq:
 				draw.text((xcoord, ycoord), el, font=ft, fill=fill)
 				tw, th = draw.textsize(el, font=ft)
-				if ft == enTitleFont:
-					ft = cnTitleFont
+				if ft == en_title_font:
+					ft = cn_title_font
 				else:
-					ft = enTitleFont
+					ft = en_title_font
 				xcoord += tw
 		else:
-			ft = enTextFont
+			ft = en_text_font
 
 			for el in seq:
 				draw.text((xcoord, ycoord), el, font=ft, fill=fill)
 				tw, th = draw.textsize(el, font=ft)
-				if ft == enTextFont:
-					ft = cnTextFont
+				if ft == en_text_font:
+					ft = cn_text_font
 				else:
-					ft = enTextFont
+					ft = en_text_font
 				xcoord += tw
 	else:
 		if title:
-			ft = cnTitleFont
+			ft = cn_title_font
 
 			for el in seq:
 				draw.text((xcoord, ycoord), el, font=ft, fill=fill)
 				tw, th = draw.textsize(el, font=ft)
-				if ft == enTitleFont:
-					ft = cnTitleFont
+				if ft == en_title_font:
+					ft = cn_title_font
 				else:
-					ft = enTitleFont
+					ft = en_title_font
 				xcoord += tw
 		else:
-			ft = cnTextFont
+			ft = cn_text_font
 
 			for el in seq:
 				draw.text((xcoord, ycoord), el, font=ft, fill=fill)
 				tw, th = draw.textsize(el, font=ft)
-				if ft == enTextFont:
-					ft = cnTextFont
+				if ft == en_text_font:
+					ft = cn_text_font
 				else:
-					ft = enTextFont
+					ft = en_text_font
 				xcoord += tw
 
-def loadAvatar(avypath):
+def load_avatar(avypath):
 	avatar = Image.open(avypath)
 	avatar = avatar.resize((86,86))
 	return avatar
 
 #fonts
-enTitleFont = ImageFont.truetype('files\\sf-ui-display-semibold-58646eddcae92.otf', 32)
-enTextFont = ImageFont.truetype('files\\SFPRODISPLAYREGULAR.OTF', 32)
-cnTitleFont = ImageFont.truetype('files\\PingFang Bold.ttf', 32)
-cnTextFont = ImageFont.truetype('files\\PingFang Medium.ttf', 32)
-timeFont = ImageFont.truetype('files\\sf-ui-display-medium-58646be638f96.otf', 28)
+en_title_font = ImageFont.truetype('files\\sf-ui-display-semibold-58646eddcae92.otf', 32)
+en_text_font = ImageFont.truetype('files\\SFPRODISPLAYREGULAR.OTF', 32)
+cn_title_font = ImageFont.truetype('files\\PingFang Bold.ttf', 32)
+cn_text_font = ImageFont.truetype('files\\PingFang Medium.ttf', 32)
+time_font = ImageFont.truetype('files\\sf-ui-display-medium-58646be638f96.otf', 28)
 system_time_font = ImageFont.truetype('files\\SFPRODISPLAYBOLD.OTF', 32)
 
 #constants
 pattern = re.compile("[\\dA-Za-z\\s.,\"$%!?:()-\u2014;\u00e9]+")
 w, h = 828, 1792
-topMargin = 14
-sideMargin = 25
-fixedBubbleWidth = 595
-maxTextWidth = fixedBubbleWidth - 50
-bubbleTopMargin = 17
-bubbleLineMargin = 8
-timeMarkerHeight = 34
-maxChatHeight = 1434
+top_margin = 14
+side_margin = 25
+fixed_bubble_width = 595
+max_text_width = fixed_bubble_width - 50
+bubble_top_margin = 17
+bubble_line_margin = 8
+timestamp_height = 34
+max_chat_height = 1434
 chat_title_height = 87
 system_time_bar_height = 97
 top_part_height = chat_title_height + system_time_bar_height
 
 #images
-titlebar = Image.open('files\\chattitle.png')
-inputbox = Image.open('files\\inputbox.png')
+title_bar = Image.open('files\\chattitle.png')
+input_box = Image.open('files\\inputbox.png')
 whitearrow = Image.open('files\\speechbubblewhitearrow.png')
 greenarrow = Image.open('files\\speechbubblegreenarrow.png')
 system_time_bar = Image.open('files\\systemtimebarlight.png')
 
-titlebarDark = Image.open('files\\chattitledark.png')
-inputboxDark = Image.open('files\\inputboxdark.png')
+title_bar_dark = Image.open('files\\chattitledark.png')
+input_box_dark = Image.open('files\\inputboxdark.png')
 darkarrow = Image.open('files\\speechbubbledarkarrow.png')
 greenarrowDark = Image.open('files\\speechbubblegreenarrowdark.png')
 system_time_bar_dark = Image.open('files\\systemtimebardark.png')
