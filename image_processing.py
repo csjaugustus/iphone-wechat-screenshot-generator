@@ -207,11 +207,15 @@ class Screenshot():
             split_text = split_text[indx:]
             lines.append(line)
 
-        text_height = 0
+        text_hs = []
         for l in lines:
             th = get_text_size(l)[1]
-            text_height += th
-        h = max(2 * top_margin + 2 * bubble_top_margin + (len(lines)-1) * bubble_line_margin + text_height + 7, avatar_px + 2 * top_margin)
+            text_hs.append(th)
+        total_text_h = sum(text_hs)
+
+        speech_bubble_required_h = 2 * top_margin + 2 * bubble_top_margin + int((text_hs[0] / 2 + (len(lines)-1) * line_mid_to_mid_distance + text_hs[-1] / 2))
+        avatar_required_h = avatar_px + 2 * top_margin
+        h = max(speech_bubble_required_h, avatar_required_h)
 
         def round_corners(img, corner_px=10, curve_strength=1.8): # modifies on the spot, no return value
             img_w, img_h = img.size
@@ -259,9 +263,14 @@ class Screenshot():
 
             yincrement = 0
 
-            for l in lines:
+            for i, l in enumerate(lines):
+                current_th = get_text_size(l, get_min=True)[1]
+                if i == 0:
+                    yincrement = 0
+                else:
+                    yincrement += prev_th / 2 + line_mid_to_mid_distance - current_th / 2
                 draw_text(bubble_draw, bubble_left_margin, bubble_top_margin+yincrement, l, text_colour)
-                yincrement += bubble_line_margin + get_text_size(l)[1]
+                prev_th = current_th
 
             if side == "left":
                 speech_bubble = self.get_concat_h(self.left_arrow, bubble_canvas)
@@ -330,7 +339,7 @@ def sort_text(text):
 
     return seq
 
-def get_text_size(text, title=False):
+def get_text_size(text, title=False, get_min=False):
     new = Screenshot("light")
     canvas = new.get()
     draw = ImageDraw.Draw(canvas)
@@ -347,8 +356,12 @@ def get_text_size(text, title=False):
             for el in seq:
                 tw, th = draw.textsize(el, font=ft)
                 w += tw
-                if th > h:
-                    h = th
+                if get_min:
+                    if th < h:
+                        h = th
+                else:
+                    if th > h:
+                        h = th
                 if ft == en_title_font:
                     ft = cn_title_font
                 else:
@@ -360,8 +373,12 @@ def get_text_size(text, title=False):
             for el in seq:
                 tw, th = draw.textsize(el, font=ft)
                 w += tw
-                if th > h:
-                    h = th
+                if get_min:
+                    if th < h:
+                        h = th
+                else:
+                    if th > h:
+                        h = th
                 if ft == en_text_font:
                     ft = cn_text_font
                 else:
@@ -373,8 +390,12 @@ def get_text_size(text, title=False):
             for el in seq:
                 tw, th = draw.textsize(el, font=ft)
                 w += tw
-                if th > h:
-                    h = th
+                if get_min:
+                    if th < h:
+                        h = th
+                else:
+                    if th > h:
+                        h = th
                 if ft == en_title_font:
                     ft = cn_title_font
                 else:
@@ -386,8 +407,12 @@ def get_text_size(text, title=False):
             for el in seq:
                 tw, th = draw.textsize(el, font=ft)
                 w += tw
-                if th > h:
-                    h = th
+                if get_min:
+                    if th < h:
+                        h = th
+                else:
+                    if th > h:
+                        h = th
                 if ft == en_text_font:
                     ft = cn_text_font
                 else:
@@ -496,7 +521,6 @@ bubble_left_margin = 25
 max_bubble_width = 574
 max_text_width = max_bubble_width - 2 * bubble_left_margin
 bubble_top_margin = 17
-bubble_line_margin = 8
 timestamp_height = 34
 chat_title_height = 87
 system_time_bar_height = 97
@@ -504,6 +528,7 @@ top_part_height = chat_title_height + system_time_bar_height
 input_box_height = 174
 max_chat_height = h - top_part_height - input_box_height
 avatar_px = 80
+line_mid_to_mid_distance = 40
 
 #images
 title_bar = Image.open('files\\chattitle.png')
