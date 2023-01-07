@@ -234,8 +234,8 @@ class Screenshot():
             bubble_width = longest_line_length + 2 * 30
             bubble_side_margin = 30
         else:
-            bubble_width = fixed_bubble_width
-            bubble_side_margin = (fixed_bubble_width - max(get_text_size(l)[0] for l in lines))/2
+            bubble_width = max_bubble_width
+            bubble_side_margin = (max_bubble_width - max(get_text_size(l)[0] for l in lines))/2
 
         bubble_height = h - (2 * top_margin)
 
@@ -470,8 +470,8 @@ pattern = re.compile("[\\dA-Za-z\\s.,\"$%!?:()-\u2014;\u00e9]+")
 w, h = 828, 1792
 top_margin = 14
 side_margin = 25
-fixed_bubble_width = 574
-max_text_width = fixed_bubble_width - 2 * side_margin
+max_bubble_width = 574
+max_text_width = max_bubble_width - 2 * side_margin
 bubble_top_margin = 17
 bubble_line_margin = 8
 timestamp_height = 34
