@@ -1,4 +1,4 @@
-from imageProcessing import Screenshot
+from image_processing import Screenshot
 import re
 import os
 import tkinter as tk
@@ -8,6 +8,32 @@ from datetime import datetime
 import pyperclip
 from io import BytesIO
 import win32clipboard
+
+def update_button_states():
+	if lb.get(0) or title_is_set or battery_is_set or system_time_is_set:
+		clear_button.config(state=tk.NORMAL)
+
+		if lb.get(0):
+			delete_button.config(state=tk.NORMAL)
+			copy_without_name_button.config(state=tk.NORMAL)
+
+			if title_is_set and battery_is_set and system_time_is_set:
+				copy_with_name_button.config(state=tk.NORMAL)
+				save_button.config(state=tk.NORMAL)
+			else:
+				copy_with_name_button.config(state=tk.DISABLED)
+				save_button.config(state=tk.DISABLED)
+
+		else:
+			save_button.config(state=tk.DISABLED)
+			copy_with_name_button.config(state=tk.DISABLED)
+			copy_without_name_button.config(state=tk.DISABLED)
+	else:
+		clear_button.config(state=tk.DISABLED)
+		delete_button.config(state=tk.DISABLED)
+		save_button.config(state=tk.DISABLED)
+		copy_with_name_button.config(state=tk.DISABLED)
+		copy_without_name_button.config(state=tk.DISABLED)
 
 def get_timestamp():
 	now = datetime.now()
@@ -38,7 +64,7 @@ def popup_message(title, message, window_to_close=None):
 	ok = ttk.Button(popup_window, text="Ok", command=close)
 	msg.pack(padx=10, pady=10)
 	ok.pack(padx=10, pady=10)
-	
+
 
 def add_entry():
 	whitespace = re.compile("^\\s$")
@@ -50,7 +76,7 @@ def add_entry():
 			if whitespace.findall(text):
 				errors.append("Please enter some text.")
 			# elif not time_regex.findall(text):
-			# 	errors.append("Please enter a valid time in such format xx:xx.")
+			#   errors.append("Please enter a valid time in such format xx:xx.")
 			if errors:
 				popup_message("Error", "\n".join(e for e in errors))
 				return
@@ -78,10 +104,7 @@ def add_entry():
 			add_window.destroy()
 
 		lb.insert(tk.END, text)
-		clear_button.config(state=tk.NORMAL)
-		delete_button.config(state=tk.NORMAL)
-		save_button.config(state=tk.NORMAL)
-		copy_screenshot_button.config(state=tk.NORMAL)
+		update_button_states()
 
 		update_preview()
 
@@ -135,7 +158,7 @@ def add_entry():
 	r2.grid(row=2, column=6, pady=10)
 
 	def change_states(event):
-		if r1['state'] == tk.NORMAL:
+		if not cb_var.get():
 			r1.config(state=tk.DISABLED)
 			r2.config(state=tk.DISABLED)
 			e1.delete(0, tk.END)
@@ -147,8 +170,8 @@ def add_entry():
 			for b in avy_buttons:
 				b.config(state=tk.NORMAL)
 
-	cb_var = tk.IntVar()
-	cb = ttk.Checkbutton(add_window, text="Add as Time Marker", variable=cb_var, style="Switch.TCheckbutton")
+	cb_var = tk.BooleanVar()
+	cb = ttk.Checkbutton(add_window, text="Add as Timestamp", variable=cb_var, style="Switch.TCheckbutton")
 	cb.grid(row=3, column=5, columnspan=2, padx=10, pady=10)
 	cb.bind('<Button-1>', change_states)
 
@@ -167,13 +190,7 @@ def delete_entry():
 		canvas.delete(selected_index)
 		lb.delete(selected_index)
 
-		if not lb.get(0):
-			if not canvas.title:
-				clear_button.config(state=tk.DISABLED)
-				delete_button.config(state=tk.DISABLED)
-				save_button.config(state=tk.DISABLED)
-				copy_screenshot_button.config(state=tk.DISABLED)
-
+		update_button_states()
 		update_preview()
 
 def save_screenshot():
@@ -181,49 +198,51 @@ def save_screenshot():
 	current_canvas = canvas.get()
 	current_canvas.save(d)
 	popup_message("Successful", f"Saved under {d}.")
-	
+
 
 def set_title():
 	title = title_entry.get()
 	canvas.set_title(title)
 	update_preview()
 
+	global title_is_set
+
 	if title:
-		clear_button.config(state=tk.NORMAL)
 		title_is_set = True
 	else:
-		if not lb.get(0) and not system_time_is_set:
-			clear_button.config(state=tk.DISABLED)
-			delete_button.config(state=tk.DISABLED)
-			save_button.config(state=tk.DISABLED)
-			copy_screenshot_button.config(state=tk.DISABLED)
+		title_is_set = False
+	update_button_states()
 
 def set_system_time():
 	time = time_entry.get()
 	canvas.set_system_time(time)
 	update_preview()
 
+	global system_time_is_set
+
 	if time:
-		clear_button.config(state=tk.NORMAL)
 		system_time_is_set = True
 	else:
-		if not lb.get(0) and not title_is_set:
-			clear_button.config(state=tk.DISABLED)
-			delete_button.config(state=tk.DISABLED)
-			save_button.config(state=tk.DISABLED)
-			copy_screenshot_button.config(state=tk.DISABLED)
+		system_time_is_set = False
+	update_button_states()
 
-def copy_screenshot():
+def copy_with_name():
+	img = canvas.get_cropped_from_top()
+	copy_to_clipboard(img)
+
+def copy_without_name():
+	img = canvas.get_cropped_from_bottom()
+	copy_to_clipboard(img)
+
+def copy_to_clipboard(img):
 	def send_to_clipboard(clip_type, data):
-	    win32clipboard.OpenClipboard()
-	    win32clipboard.EmptyClipboard()
-	    win32clipboard.SetClipboardData(clip_type, data)
-	    win32clipboard.CloseClipboard()
+		win32clipboard.OpenClipboard()
+		win32clipboard.EmptyClipboard()
+		win32clipboard.SetClipboardData(clip_type, data)
+		win32clipboard.CloseClipboard()
 
 	output = BytesIO()
-	img = canvas.get()
-	cropped_img = img.crop((0, 0, w, canvas.content_height))
-	cropped_img.convert("RGB").save(output, "BMP")
+	img.convert("RGB").save(output, "BMP")
 	data = output.getvalue()[14:]
 	output.close()
 
@@ -240,8 +259,10 @@ def clear():
 		lb.delete(0,'end')
 		canvas.set_title("")
 		canvas.set_system_time("")
+		canvas.battery = ""
 		title_is_set = False
 		system_time_is_set = False
+		battery_is_set = False
 		canvas.update()
 		update_preview()
 
@@ -258,7 +279,8 @@ def clear():
 	clear_button.config(state=tk.DISABLED)
 	delete_button.config(state=tk.DISABLED)
 	save_button.config(state=tk.DISABLED)
-	copy_screenshot_button.config(state=tk.DISABLED)
+	copy_with_name_button.config(state=tk.DISABLED)
+	copy_without_name_button.config(state=tk.DISABLED)
 
 def change_mode(event):
 	if canvas.mode == "light":
@@ -269,8 +291,30 @@ def change_mode(event):
 	canvas.update(change_mode=True)
 	update_preview()
 
+def set_battery():
+	perc = battery_entry.get()
+	if perc:
+		if not perc.isdigit() or int(perc) < 1 or int(perc) > 100:
+			popup_message("Invalid Input", "Please enter a whole number between 1 and 100.")
+			battery_entry.delete(0, tk.END)
+			return
+		else:
+			perc = int(perc)
+
+	canvas.set_battery(perc)
+	update_preview()
+
+	global battery_is_set
+
+	if perc:
+		battery_is_set = True
+	else:
+		battery_is_set = False
+	update_button_states()
+
 system_time_is_set = False
 title_is_set = False
+battery_is_set = False
 
 if "output" not in os.listdir():
 	os.mkdir("output")
@@ -294,44 +338,53 @@ folder_icon = Image.open("files\\foldericon.png")
 folder_icon = folder_icon.resize((25,25))
 folder_icon = ImageTk.PhotoImage(folder_icon)
 
-save_button = ttk.Button(root, text="Save Screenshot", command=save_screenshot)
+save_button = ttk.Button(root, text="Save", command=save_screenshot)
 set_title_label = ttk.Label(root, text="Chat Title:")
 set_title_button = ttk.Button(root, text="Set", command=set_title)
 set_time_label = ttk.Label(root, text="System Time:")
 set_time_button = ttk.Button(root, text="Set", command=set_system_time)
+set_battery_label = ttk.Label(root, text="Battery Percentage:")
+set_battery_button = ttk.Button(root, text="Set", command=set_battery)
 title_entry = ttk.Entry(root, width=20)
 time_entry = ttk.Entry(root, width=10)
+battery_entry = ttk.Entry(root, width=10)
 lb = tk.Listbox(root, height=35, width=50)
 add_button = ttk.Button(root, text="Add", command=add_entry)
 delete_button = ttk.Button(root, text="Delete", command=delete_entry)
-copy_screenshot_button = ttk.Button(root, text="Copy Screenshot", command=copy_screenshot)
+copy_with_name_button = ttk.Button(root, text="Copy w/ Name", command=copy_with_name)
 open_directory_button = ttk.Button(root, image=folder_icon, command=open_dir)
 open_directory_button.image = folder_icon
 clear_button = ttk.Button(root, text="Clear", command=clear)
 mode = tk.IntVar()
 dark_mode_cb = ttk.Checkbutton(root, text="Dark Mode", variable=mode, style="Switch.TCheckbutton")
 dark_mode_cb.bind('<Button-1>', change_mode)
+copy_without_name_button = ttk.Button(root, text="Copy w/o Name", command=copy_without_name)
 
 clear_button.config(state=tk.DISABLED)
 delete_button.config(state=tk.DISABLED)
 save_button.config(state=tk.DISABLED)
-copy_screenshot_button.config(state=tk.DISABLED)
+copy_with_name_button.config(state=tk.DISABLED)
+copy_without_name_button.config(state=tk.DISABLED)
 
-image_preview_widget.grid(row=2, column=0, columnspan=2)
-dark_mode_cb.grid(row=0,column=0, columnspan=2, padx=10)
-set_title_label.grid(row=0, column=2, padx=10, pady=10)
-title_entry.grid(row=0,column=3)
-time_entry.grid(row=1,column=3)
-set_title_button.grid(row=0, column=4, padx=10)
-set_time_label.grid(row=1, column=2, padx=10)
-set_time_button.grid(row=1, column=4, padx=10)
-lb.grid(row=2,column=2, columnspan=4)
-save_button.grid(row=3,column=1, padx=10, pady=10)
-add_button.grid(row=3, column=2, padx=10, pady=10)
-delete_button.grid(row=3,column=3, padx=10, pady=10)
-copy_screenshot_button.grid(row=3,column=4,columnspan=2, padx=10, pady=10)
-open_directory_button.grid(row=0,column=5)
-clear_button.grid(row=3,column=0, padx=10, pady=10)
+image_preview_widget.grid(row=2, column=0, columnspan=3)
+dark_mode_cb.grid(row=0,column=0, columnspan=3, padx=10)
+set_title_label.grid(row=0, column=3, padx=5, pady=10)
+set_time_label.grid(row=1, column=0, padx=5)
+set_battery_label.grid(row=1, column=3, padx=5)
+title_entry.grid(row=0,column=4)
+time_entry.grid(row=1,column=1)
+battery_entry.grid(row=1,column=4)
+set_title_button.grid(row=0, column=5, padx=5)
+set_time_button.grid(row=1, column=2, padx=5)
+set_battery_button.grid(row=1, column=5, padx=5)
+lb.grid(row=2,column=3, columnspan=4)
+save_button.grid(row=3,column=2, padx=10, pady=10)
+add_button.grid(row=3, column=3, padx=10, pady=10)
+delete_button.grid(row=3,column=4, padx=10, pady=10)
+copy_with_name_button.grid(row=3,column=1, padx=10, pady=10)
+open_directory_button.grid(row=0,column=6)
+clear_button.grid(row=3,column=5, padx=10, pady=10)
+copy_without_name_button.grid(row=3, column=0, padx=10, pady=10)
 
 root.update()
 root.minsize(root.winfo_width(), root.winfo_height())
