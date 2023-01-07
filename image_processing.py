@@ -515,12 +515,12 @@ system_time_font = ImageFont.truetype('files\\SFPRODISPLAYBOLD.OTF', 32)
 #constants
 pattern = re.compile("[\\dA-Za-z\\s.,\"$%!?:()-\u2014;\u00e9]+")
 w, h = 828, 1792
-top_margin = 14
+top_margin = 17
 side_margin = 24
 bubble_left_margin = 25
 max_bubble_width = 574
 max_text_width = max_bubble_width - 2 * bubble_left_margin
-bubble_top_margin = 17
+bubble_top_margin = 25
 timestamp_height = 34
 chat_title_height = 87
 system_time_bar_height = 97
