@@ -42,7 +42,7 @@ class Screenshot():
             self.bg_colour = '#111111'
             self.left_text_colour = '#c9c9c9'
             self.timestamp_colour = '#858585'
-            self.system_time_colour = '#fcfcfc'
+            self.system_time_colour = '#5c5c5c'
             self.right_bubble_base_colour = '#42b16c'
 
             self.title_bar = title_bar_dark
