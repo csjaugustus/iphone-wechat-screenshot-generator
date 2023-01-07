@@ -153,6 +153,8 @@ class Screenshot():
             self.canvas.paste(blank, (0,top_part_height))
 
     def get_cropped_from_top(self):
+        if self.content_height == max_chat_height:
+            return self.canvas.crop((0, 0, w, h))
         return self.canvas.crop((0, 0, w, self.content_height + top_part_height))
 
     def get_cropped_from_bottom(self):
@@ -477,6 +479,7 @@ max_chat_height = 1434
 chat_title_height = 87
 system_time_bar_height = 97
 top_part_height = chat_title_height + system_time_bar_height
+input_box_height = 174
 avatar_px = 80
 
 #images
