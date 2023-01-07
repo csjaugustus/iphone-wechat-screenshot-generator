@@ -13,7 +13,7 @@ class Screenshot():
         self.canvas = Image.new('RGB', (w, h), color=self.bg_colour)
         self.canvas.paste(self.system_time_bar, (0,0))
         self.canvas.paste(self.title_bar, (0,system_time_bar_height))
-        self.canvas.paste(self.input_box, (0,1618))
+        self.canvas.paste(self.input_box, (0,h-input_box_height))
         self.entries = []
         self.entries_dark = []
         self.content_height = 0
@@ -125,7 +125,7 @@ class Screenshot():
             self.canvas = Image.new('RGB', (w, h), color=self.bg_colour)
             self.canvas.paste(self.system_time_bar, (0,0))
             self.canvas.paste(self.title_bar, (0,system_time_bar_height))
-            self.canvas.paste(self.input_box, (0,1618))
+            self.canvas.paste(self.input_box, (0,h-input_box_height))
             if self.title:
                 self.set_title(self.title)
             if self.system_time:
@@ -230,12 +230,10 @@ class Screenshot():
         round_corners(sq_mask)
 
         longest_line_length = max(get_text_size(l)[0] for l in lines)
-        if longest_line_length <= 535:
-            bubble_width = longest_line_length + 2 * 30
-            bubble_side_margin = 30
+        if longest_line_length + 2 * bubble_left_margin <= max_bubble_width:
+            bubble_width = longest_line_length + 2 * bubble_left_margin
         else:
             bubble_width = max_bubble_width
-            bubble_side_margin = (max_bubble_width - max(get_text_size(l)[0] for l in lines))/2
 
         bubble_height = h - (2 * top_margin)
 
@@ -262,7 +260,7 @@ class Screenshot():
             yincrement = 0
 
             for l in lines:
-                draw_text(bubble_draw, bubble_side_margin, bubble_top_margin+yincrement, l, text_colour)
+                draw_text(bubble_draw, bubble_left_margin, bubble_top_margin+yincrement, l, text_colour)
                 yincrement += bubble_line_margin + get_text_size(l)[1]
 
             if side == "left":
@@ -405,48 +403,72 @@ def draw_text(img_draw_obj, xcoord, ycoord, text, fill, title=False):
         if title:
             ft = en_title_font
 
+            prev_th = draw.textsize(seq[0], font=ft)[1]
+
             for el in seq:
-                draw.text((xcoord, ycoord), el, font=ft, fill=fill)
                 tw, th = draw.textsize(el, font=ft)
+                if th != prev_th:
+                    offset = (th - prev_th) / 2
+                    ycoord -= offset
+                    prev_th = th
+                draw.text((xcoord, ycoord), el, font=ft, fill=fill)
+                xcoord += tw
                 if ft == en_title_font:
                     ft = cn_title_font
                 else:
                     ft = en_title_font
-                xcoord += tw
         else:
             ft = en_text_font
 
+            prev_th = draw.textsize(seq[0], font=ft)[1]
+
             for el in seq:
-                draw.text((xcoord, ycoord), el, font=ft, fill=fill)
                 tw, th = draw.textsize(el, font=ft)
+                if th != prev_th:
+                    offset = (th - prev_th) / 2
+                    ycoord -= offset
+                    prev_th = th
+                draw.text((xcoord, ycoord), el, font=ft, fill=fill)
+                xcoord += tw
                 if ft == en_text_font:
                     ft = cn_text_font
                 else:
                     ft = en_text_font
-                xcoord += tw
     else:
         if title:
             ft = cn_title_font
 
+            prev_th = draw.textsize(seq[0], font=ft)[1]
+
             for el in seq:
-                draw.text((xcoord, ycoord), el, font=ft, fill=fill)
                 tw, th = draw.textsize(el, font=ft)
+                if th != prev_th:
+                    offset = (th - prev_th) / 2
+                    ycoord -= offset
+                    prev_th = th
+                draw.text((xcoord, ycoord), el, font=ft, fill=fill)
+                xcoord += tw
                 if ft == en_title_font:
                     ft = cn_title_font
                 else:
                     ft = en_title_font
-                xcoord += tw
         else:
             ft = cn_text_font
 
+            prev_th = draw.textsize(seq[0], font=ft)[1]
+
             for el in seq:
-                draw.text((xcoord, ycoord), el, font=ft, fill=fill)
                 tw, th = draw.textsize(el, font=ft)
+                if th != prev_th:
+                    offset = (th - prev_th) / 2
+                    ycoord -= offset
+                    prev_th = th
+                draw.text((xcoord, ycoord), el, font=ft, fill=fill)
+                xcoord += tw
                 if ft == en_text_font:
                     ft = cn_text_font
                 else:
                     ft = en_text_font
-                xcoord += tw
 
 def contains_chinese(x):
     r = pattern.findall(x)
@@ -469,17 +491,18 @@ system_time_font = ImageFont.truetype('files\\SFPRODISPLAYBOLD.OTF', 32)
 pattern = re.compile("[\\dA-Za-z\\s.,\"$%!?:()-\u2014;\u00e9]+")
 w, h = 828, 1792
 top_margin = 14
-side_margin = 25
+side_margin = 24
+bubble_left_margin = 25
 max_bubble_width = 574
-max_text_width = max_bubble_width - 2 * side_margin
+max_text_width = max_bubble_width - 2 * bubble_left_margin
 bubble_top_margin = 17
 bubble_line_margin = 8
 timestamp_height = 34
-max_chat_height = 1434
 chat_title_height = 87
 system_time_bar_height = 97
 top_part_height = chat_title_height + system_time_bar_height
 input_box_height = 174
+max_chat_height = h - top_part_height - input_box_height
 avatar_px = 80
 
 #images
