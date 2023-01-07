@@ -5,7 +5,6 @@ A Tkinter GUI program written to generate WeChat screenshots. Offers support for
 * [Installation](#installation)
 * [Main Interface](#main-interface)
 * [Adding an Entry](#adding-an-entry)
-* [Saving Images](#saving-images)
 * [Dark Mode Support](#dark-mode-support)
 * [Compiling to EXE](#compiling-to-exe)
 
@@ -21,19 +20,18 @@ $ main.py
 ```
 
 ## Main Interface
-<img src="https://user-images.githubusercontent.com/61149391/210511380-58821842-fa98-49f1-9f2b-e20c7f92956e.png" width=50% height=50%>
-On the right you can set the chat title and add new speech bubbles, and on the left the changes are reflected in the preview image area.
+<img src="https://user-images.githubusercontent.com/61149391/211152064-0544136d-f559-4a88-8ec9-63d71b2951cd.png" width=50% height=50%>
+Top: Configure system time, chat title, and battery percentage.
+Right: View existing chat bubbles.
+Bottom: Copy non-blank portion of generated image to clipboard (either with or without name), save entire screenshot, add/delete entries, clear screen.
 
 ## Adding an Entry
-<img src="https://user-images.githubusercontent.com/61149391/128868975-d398fab7-2c2e-44f1-9f06-90dbadee1c19.png" width=50% height=50%>
-Save your square avatars under files\avatars in either .png or .jpg format. They do not need to be manually resized. You do not need to select an avatar or side if you are adding a time marker.
-
-## Saving Images
-<img src="https://user-images.githubusercontent.com/61149391/210512702-ab926b27-e1fc-4f11-bf7b-d4c1a270ba61.png" width=50% height=50%>
-You can choose to either save the entire screenshot. Outputs will be saved under the "output" folder, which will be automatically created. Alternatively, you can choose to "copy screenshot", which will copy to clipboard non-blank parts of the screenshot.
+<img src="https://user-images.githubusercontent.com/61149391/211152220-6afc3251-5046-4ea6-aabe-7dfd715fabb3.png" width=50% height=50%>
+Save your square avatars under files\avatars in either .png or .jpg format. They do not need to be manually resized. You do not need to select an avatar or side if you are adding a timestamp.
 
 ## Dark Mode Support
-<img src="https://user-images.githubusercontent.com/61149391/210512615-7eee7bcf-1e6a-40c9-9fdd-488e1ec6b1b3.png" width=50% height=50%>
+<img src="https://user-images.githubusercontent.com/61149391/211152491-dbac4b82-3bcd-4fa6-8a02-556e03709d71.png" width=50% height=50%>
+<img src="https://user-images.githubusercontent.com/61149391/211152509-6c95bb87-c99a-4c25-9dfb-d3196267d1bb.png" width=50% height=50%>
 You can toggle between dark & light mode at any time.
 
 ## Compiling to EXE
