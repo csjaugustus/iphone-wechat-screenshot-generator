@@ -106,7 +106,8 @@ full_dark_battery_pin = Image.open("files\\full_dark_battery_pin.png")
 battery_font = ImageFont.truetype('files\\SFPRODISPLAYBOLD.OTF', 25)
 
 if __name__ == "__main__":
-    create_battery(19, "dark")
+    b = create_battery(19, "dark")
+    b.show()
 
 
 
