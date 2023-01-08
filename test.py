@@ -1,31 +1,17 @@
 from PIL import ImageDraw, Image, ImageFont
 
-def get_min_letter_height(text, font):
-    temp_canvas = Image.new("RGB", (200,200), color="white")
+def new_get_text_size(text, font):
+    temp_canvas = Image.new("RGB", (0, 0))
     draw = ImageDraw.Draw(temp_canvas)
-    if not text:
-        return 0
-    if len(text) == 1:
-        return draw.textsize(text, font)[1]
 
-    for i, letter in enumerate(text):
-        if i == 0:
-            current_th = draw.textbbox(letter, font=font)
-            prev_th = current_th
-            min_th = current_th
-        else:
-            current_th = draw.textbbox(letter, font=font)
-            if current_th < prev_th:
-                min_th = current_th
+    draw.text((0, 0), text, font=font)
+    bbox = draw.textbbox((0, 0), text, font=font)
 
-    return min_th
+    x_min, y_min, x_max, y_max = bbox
+    tw = x_max - x_min
+    th = y_max - y_min
+    return tw, th
 
 en_text_font = ImageFont.truetype('files\\SFPRODISPLAYREGULAR.OTF', 32)
 
-blank = Image.new('RGB', (114,37), color="white")
-draw_obj = ImageDraw.Draw(blank)
-draw_obj.text((0,0), "example", font=en_text_font, fill="black")
-tw, th = draw_obj.textbbox("example", font=en_text_font)
-print(tw, th)
-print(get_min_letter_height("example", font=en_text_font))
-blank.show()
+print(new_get_text_size("Hello World", en_text_font))

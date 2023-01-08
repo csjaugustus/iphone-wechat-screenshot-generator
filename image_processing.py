@@ -84,7 +84,7 @@ class Screenshot():
         def create_timestamp():
             timestamp_canvas = Image.new('RGB', (w, timestamp_height + 2 * top_margin), color=self.bg_colour)
             draw = ImageDraw.Draw(timestamp_canvas)
-            x_pos = (w - draw.textsize(t, font=ft)[0])/2
+            x_pos = (w - new_get_text_size(t, font=ft)[0])/2
             draw.text((x_pos, top_margin), t, font=ft, fill=self.timestamp_colour)
             return timestamp_canvas
 
@@ -338,9 +338,6 @@ def sort_text(text):
     return seq
 
 def get_text_size(text, title=False):
-    new = Screenshot("light")
-    canvas = new.get()
-    draw = ImageDraw.Draw(canvas)
     if not text:
         return (0, 0)
 
@@ -352,7 +349,7 @@ def get_text_size(text, title=False):
             ft = en_title_font
 
             for el in seq:
-                tw, th = draw.textsize(el, font=ft)
+                tw, th = new_get_text_size(el, font=ft)
                 w += tw
                 if th > h:
                     h = th
@@ -365,7 +362,7 @@ def get_text_size(text, title=False):
             ft = en_text_font
 
             for el in seq:
-                tw, th = draw.textsize(el, font=ft)
+                tw, th = new_get_text_size(el, font=ft)
                 w += tw
                 if th > h:
                     h = th
@@ -378,7 +375,7 @@ def get_text_size(text, title=False):
             ft = cn_title_font
 
             for el in seq:
-                tw, th = draw.textsize(el, font=ft)
+                tw, th = new_get_text_size(el, font=ft)
                 w += tw
                 if th > h:
                     h = th
@@ -391,7 +388,7 @@ def get_text_size(text, title=False):
             ft = cn_text_font
 
             for el in seq:
-                tw, th = draw.textsize(el, font=ft)
+                tw, th = new_get_text_size(el, font=ft)
                 w += tw
                 if th > h:
                     h = th
@@ -410,10 +407,10 @@ def draw_text(img_draw_obj, xcoord, ycoord, text, fill, title=False):
         if title:
             ft = en_title_font
 
-            prev_th = draw.textsize(seq[0], font=ft)[1]
+            prev_th = new_get_text_size(seq[0], font=ft)[1]
 
             for el in seq:
-                tw, th = draw.textsize(el, font=ft)
+                tw, th = new_get_text_size(el, font=ft)
                 draw.text((xcoord, ycoord), el, font=ft, fill=fill, anchor="lm")
                 xcoord += tw
                 if ft == en_title_font:
@@ -423,10 +420,10 @@ def draw_text(img_draw_obj, xcoord, ycoord, text, fill, title=False):
         else:
             ft = en_text_font
 
-            prev_th = draw.textsize(seq[0], font=ft)[1]
+            prev_th = new_get_text_size(seq[0], font=ft)[1]
 
             for el in seq:
-                tw, th = draw.textsize(el, font=ft)
+                tw, th = new_get_text_size(el, font=ft)
                 draw.text((xcoord, ycoord), el, font=ft, fill=fill, anchor="lm")
                 xcoord += tw
                 if ft == en_text_font:
@@ -437,10 +434,10 @@ def draw_text(img_draw_obj, xcoord, ycoord, text, fill, title=False):
         if title:
             ft = cn_title_font
 
-            prev_th = draw.textsize(seq[0], font=ft)[1]
+            prev_th = new_get_text_size(seq[0], font=ft)[1]
 
             for el in seq:
-                tw, th = draw.textsize(el, font=ft)
+                tw, th = new_get_text_size(el, font=ft)
                 draw.text((xcoord, ycoord), el, font=ft, fill=fill, anchor="lm")
                 xcoord += tw
                 if ft == en_title_font:
@@ -450,10 +447,10 @@ def draw_text(img_draw_obj, xcoord, ycoord, text, fill, title=False):
         else:
             ft = cn_text_font
 
-            prev_th = draw.textsize(seq[0], font=ft)[1]
+            prev_th = new_get_text_size(seq[0], font=ft)[1]
 
             for el in seq:
-                tw, th = draw.textsize(el, font=ft)
+                tw, th = new_get_text_size(el, font=ft)
                 draw.text((xcoord, ycoord), el, font=ft, fill=fill, anchor="lm")
                 xcoord += tw
                 if ft == en_text_font:
@@ -468,6 +465,18 @@ def contains_chinese(x):
     if r[0] == x:
         return False
     return True
+
+def new_get_text_size(text, font): # uses bbox instead of textsize, since textsize is deprecated
+    temp_canvas = Image.new("RGB", (0, 0))
+    draw = ImageDraw.Draw(temp_canvas)
+
+    draw.text((0, 0), text, font=font)
+    bbox = draw.textbbox((0, 0), text, font=font)
+
+    x_min, y_min, x_max, y_max = bbox
+    tw = x_max - x_min
+    th = y_max - y_min
+    return tw, th
 
 #fonts
 en_title_font = ImageFont.truetype('files\\sf-ui-display-semibold-58646eddcae92.otf', 32)
