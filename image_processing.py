@@ -58,8 +58,8 @@ class Screenshot():
         self.canvas.paste(self.title_bar, (0,system_time_bar_height))
         if title:
             draw = ImageDraw.Draw(self.canvas)
-            tw, th = get_text_size(title, title=True)
-            draw_text(draw, (w-tw)/2, system_time_bar_height + chat_title_height / 2, title, self.left_text_colour, title=True)
+            tw, th = get_text_size(title, is_title=True)
+            draw_text(draw, (w-tw)/2, system_time_bar_height + chat_title_height / 2, title, self.left_text_colour, is_title=True)
         self.title = title
 
     def set_system_time(self, time):
@@ -337,126 +337,30 @@ def sort_text(text):
 
     return seq
 
-def get_text_size(text, title=False):
+def get_text_size(text, is_title=False):
     if not text:
         return (0, 0)
 
     w, h = 0, 0
     seq = sort_text(text)
 
-    if pattern.findall(seq[0]): #first element is not chinese
-        if title:
-            ft = en_title_font
-
-            for el in seq:
-                tw, th = new_get_text_size(el, font=ft)
-                w += tw
-                if th > h:
-                    h = th
-                if ft == en_title_font:
-                    ft = cn_title_font
-                else:
-                    ft = en_title_font
-
-        else:
-            ft = en_text_font
-
-            for el in seq:
-                tw, th = new_get_text_size(el, font=ft)
-                w += tw
-                if th > h:
-                    h = th
-                if ft == en_text_font:
-                    ft = cn_text_font
-                else:
-                    ft = en_text_font
-    else:
-        if title:
-            ft = cn_title_font
-
-            for el in seq:
-                tw, th = new_get_text_size(el, font=ft)
-                w += tw
-                if th > h:
-                    h = th
-                if ft == en_title_font:
-                    ft = cn_title_font
-                else:
-                    ft = en_title_font
-
-        else:
-            ft = cn_text_font
-
-            for el in seq:
-                tw, th = new_get_text_size(el, font=ft)
-                w += tw
-                if th > h:
-                    h = th
-                if ft == en_text_font:
-                    ft = cn_text_font
-                else:
-                    ft = en_text_font
+    for el in seq:
+        tw, th = new_get_text_size(el, font=get_font(el, is_title=is_title))
+        w += tw
+        if th > h:
+            h = th
 
     return (w, h)
 
-def draw_text(img_draw_obj, xcoord, ycoord, text, fill, title=False):
+def draw_text(img_draw_obj, xcoord, ycoord, text, fill, is_title=False):
     draw = img_draw_obj
     seq = sort_text(text)
 
-    if pattern.findall(seq[0]): #first element is not chinese
-        if title:
-            ft = en_title_font
-
-            prev_th = new_get_text_size(seq[0], font=ft)[1]
-
-            for el in seq:
-                tw, th = new_get_text_size(el, font=ft)
-                draw.text((xcoord, ycoord), el, font=ft, fill=fill, anchor="lm")
-                xcoord += tw
-                if ft == en_title_font:
-                    ft = cn_title_font
-                else:
-                    ft = en_title_font
-        else:
-            ft = en_text_font
-
-            prev_th = new_get_text_size(seq[0], font=ft)[1]
-
-            for el in seq:
-                tw, th = new_get_text_size(el, font=ft)
-                draw.text((xcoord, ycoord), el, font=ft, fill=fill, anchor="lm")
-                xcoord += tw
-                if ft == en_text_font:
-                    ft = cn_text_font
-                else:
-                    ft = en_text_font
-    else:
-        if title:
-            ft = cn_title_font
-
-            prev_th = new_get_text_size(seq[0], font=ft)[1]
-
-            for el in seq:
-                tw, th = new_get_text_size(el, font=ft)
-                draw.text((xcoord, ycoord), el, font=ft, fill=fill, anchor="lm")
-                xcoord += tw
-                if ft == en_title_font:
-                    ft = cn_title_font
-                else:
-                    ft = en_title_font
-        else:
-            ft = cn_text_font
-
-            prev_th = new_get_text_size(seq[0], font=ft)[1]
-
-            for el in seq:
-                tw, th = new_get_text_size(el, font=ft)
-                draw.text((xcoord, ycoord), el, font=ft, fill=fill, anchor="lm")
-                xcoord += tw
-                if ft == en_text_font:
-                    ft = cn_text_font
-                else:
-                    ft = en_text_font
+    for el in seq:
+        ft = get_font(el, is_title=is_title)
+        tw, th = new_get_text_size(el, font=ft)
+        draw.text((xcoord, ycoord), el, font=ft, fill=fill, anchor="lm")
+        xcoord += tw
 
 def contains_chinese(x):
     r = pattern.findall(x)
@@ -465,6 +369,20 @@ def contains_chinese(x):
     if r[0] == x:
         return False
     return True
+
+def get_font(text, is_title):
+    if is_title:
+        if contains_chinese(text):
+            ft = cn_title_font
+        else:
+            ft = en_title_font
+    else:
+        if contains_chinese(text):
+            ft = cn_text_font
+        else:
+            ft = en_text_font
+
+    return ft
 
 def new_get_text_size(text, font): # uses bbox instead of textsize, since textsize is deprecated
     temp_canvas = Image.new("RGB", (0, 0))
