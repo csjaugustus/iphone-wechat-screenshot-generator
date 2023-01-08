@@ -59,7 +59,7 @@ class Screenshot():
         if title:
             draw = ImageDraw.Draw(self.canvas)
             tw, th = get_text_size(title, title=True)
-            draw_text(draw, (w-tw)/2, 118, title, self.left_text_colour, title=True)
+            draw_text(draw, (w-tw)/2, system_time_bar_height + chat_title_height / 2, title, self.left_text_colour, title=True)
         self.title = title
 
     def set_system_time(self, time):
@@ -261,12 +261,10 @@ class Screenshot():
 
             bubble_draw = ImageDraw.Draw(bubble_canvas)
 
-            yincrement = 0
-
             for i, l in enumerate(lines):
-                current_th = get_text_size(l, get_min=True)[1]
+                current_th = get_text_size(l)[1]
                 if i == 0:
-                    yincrement = 0
+                    yincrement = current_th / 2
                 else:
                     yincrement += prev_th / 2 + line_mid_to_mid_distance - current_th / 2
                 draw_text(bubble_draw, bubble_left_margin, bubble_top_margin+yincrement, l, text_colour)
@@ -339,7 +337,7 @@ def sort_text(text):
 
     return seq
 
-def get_text_size(text, title=False, get_min=False):
+def get_text_size(text, title=False):
     new = Screenshot("light")
     canvas = new.get()
     draw = ImageDraw.Draw(canvas)
@@ -356,12 +354,8 @@ def get_text_size(text, title=False, get_min=False):
             for el in seq:
                 tw, th = draw.textsize(el, font=ft)
                 w += tw
-                if get_min:
-                    if th < h:
-                        h = th
-                else:
-                    if th > h:
-                        h = th
+                if th > h:
+                    h = th
                 if ft == en_title_font:
                     ft = cn_title_font
                 else:
@@ -373,12 +367,8 @@ def get_text_size(text, title=False, get_min=False):
             for el in seq:
                 tw, th = draw.textsize(el, font=ft)
                 w += tw
-                if get_min:
-                    if th < h:
-                        h = th
-                else:
-                    if th > h:
-                        h = th
+                if th > h:
+                    h = th
                 if ft == en_text_font:
                     ft = cn_text_font
                 else:
@@ -390,12 +380,8 @@ def get_text_size(text, title=False, get_min=False):
             for el in seq:
                 tw, th = draw.textsize(el, font=ft)
                 w += tw
-                if get_min:
-                    if th < h:
-                        h = th
-                else:
-                    if th > h:
-                        h = th
+                if th > h:
+                    h = th
                 if ft == en_title_font:
                     ft = cn_title_font
                 else:
@@ -407,12 +393,8 @@ def get_text_size(text, title=False, get_min=False):
             for el in seq:
                 tw, th = draw.textsize(el, font=ft)
                 w += tw
-                if get_min:
-                    if th < h:
-                        h = th
-                else:
-                    if th > h:
-                        h = th
+                if th > h:
+                    h = th
                 if ft == en_text_font:
                     ft = cn_text_font
                 else:
@@ -432,11 +414,7 @@ def draw_text(img_draw_obj, xcoord, ycoord, text, fill, title=False):
 
             for el in seq:
                 tw, th = draw.textsize(el, font=ft)
-                if th != prev_th:
-                    offset = (th - prev_th) / 2
-                    ycoord -= offset
-                    prev_th = th
-                draw.text((xcoord, ycoord), el, font=ft, fill=fill)
+                draw.text((xcoord, ycoord), el, font=ft, fill=fill, anchor="lm")
                 xcoord += tw
                 if ft == en_title_font:
                     ft = cn_title_font
@@ -449,11 +427,7 @@ def draw_text(img_draw_obj, xcoord, ycoord, text, fill, title=False):
 
             for el in seq:
                 tw, th = draw.textsize(el, font=ft)
-                if th != prev_th:
-                    offset = (th - prev_th) / 2
-                    ycoord -= offset
-                    prev_th = th
-                draw.text((xcoord, ycoord), el, font=ft, fill=fill)
+                draw.text((xcoord, ycoord), el, font=ft, fill=fill, anchor="lm")
                 xcoord += tw
                 if ft == en_text_font:
                     ft = cn_text_font
@@ -467,11 +441,7 @@ def draw_text(img_draw_obj, xcoord, ycoord, text, fill, title=False):
 
             for el in seq:
                 tw, th = draw.textsize(el, font=ft)
-                if th != prev_th:
-                    offset = (th - prev_th) / 2
-                    ycoord -= offset
-                    prev_th = th
-                draw.text((xcoord, ycoord), el, font=ft, fill=fill)
+                draw.text((xcoord, ycoord), el, font=ft, fill=fill, anchor="lm")
                 xcoord += tw
                 if ft == en_title_font:
                     ft = cn_title_font
@@ -484,11 +454,7 @@ def draw_text(img_draw_obj, xcoord, ycoord, text, fill, title=False):
 
             for el in seq:
                 tw, th = draw.textsize(el, font=ft)
-                if th != prev_th:
-                    offset = (th - prev_th) / 2
-                    ycoord -= offset
-                    prev_th = th
-                draw.text((xcoord, ycoord), el, font=ft, fill=fill)
+                draw.text((xcoord, ycoord), el, font=ft, fill=fill, anchor="lm")
                 xcoord += tw
                 if ft == en_text_font:
                     ft = cn_text_font
