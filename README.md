@@ -30,8 +30,9 @@ Bottom: Copy non-blank portion of generated image to clipboard (either with or w
 Save your square avatars under files\avatars in either .png or .jpg format. They do not need to be manually resized. You do not need to select an avatar or side if you are adding a timestamp.
 
 ## Dark Mode Support
-<img src="https://user-images.githubusercontent.com/61149391/211152491-dbac4b82-3bcd-4fa6-8a02-556e03709d71.png" width=50% height=50%>
-<img src="https://user-images.githubusercontent.com/61149391/211152509-6c95bb87-c99a-4c25-9dfb-d3196267d1bb.png" width=50% height=50%>
+<img src="https://user-images.githubusercontent.com/61149391/211193779-bf2fc70c-bf9d-4248-86f3-142b93bbd45b.png" width=50% height=50%>
+<img src="https://user-images.githubusercontent.com/61149391/211193794-46f696d6-5296-4a44-bf5e-ed0f26b9bb50.png" width=50% height=50%>
+
 You can toggle between dark & light mode at any time.
 
 ## Compiling to EXE
