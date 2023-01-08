@@ -1,5 +1,17 @@
 from PIL import Image, ImageDraw, ImageFont
 
+def new_get_text_size(text, font): # uses bbox instead of textsize, since textsize is deprecated
+    temp_canvas = Image.new("RGB", (0, 0))
+    draw = ImageDraw.Draw(temp_canvas)
+
+    draw.text((0, 0), text, font=font)
+    bbox = draw.textbbox((0, 0), text, font=font)
+
+    x_min, y_min, x_max, y_max = bbox
+    tw = x_max - x_min
+    th = y_max - y_min
+    return tw, th
+
 def get_concat_h(im1, im2):
     dst = Image.new('RGB', (im1.width + im2.width, max(im1.height,im2.height)), color='#000000')
     dst.paste(im1, (0, 0))
@@ -66,7 +78,7 @@ def create_battery(perc, mode):
 
     # adding text
     draw = ImageDraw.Draw(canvas)
-    tw, th = draw.textsize(str(perc), font=battery_font)
+    tw, th = new_get_text_size(str(perc), font=battery_font)
     x_pos = (pinless_w - tw) / 2
     draw.text((x_pos, 0+y_pos_offset), str(perc), font=battery_font, fill=font_colour)
 
