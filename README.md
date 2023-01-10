@@ -21,13 +21,14 @@ $ main.py
 
 ## Main Interface
 <img src="https://user-images.githubusercontent.com/61149391/211152064-0544136d-f559-4a88-8ec9-63d71b2951cd.png" width=50% height=50%>
-Top: Configure system time, chat title, and battery percentage.
-Right: View existing chat bubbles.
+Top: Configure system time, chat title, and battery percentage.<br/>
+Right: View existing chat bubbles.<br/>
 Bottom: Copy non-blank portion of generated image to clipboard (either with or without name), save entire screenshot, add/delete entries, clear screen.
 
 ## Adding an Entry
 <img src="https://user-images.githubusercontent.com/61149391/211152220-6afc3251-5046-4ea6-aabe-7dfd715fabb3.png" width=50% height=50%>
-Save your square avatars under files\avatars in either .png or .jpg format. They do not need to be manually resized. You do not need to select an avatar or side if you are adding a timestamp.
+Save your square avatars under files\avatars in either .png or .jpg format. They do not need to be manually resized. <br/>
+You do not need to select an avatar or side if you are adding a timestamp.
 
 ## Dark Mode Support
 <img src="https://user-images.githubusercontent.com/61149391/211193779-bf2fc70c-bf9d-4248-86f3-142b93bbd45b.png" width=50% height=50%>
