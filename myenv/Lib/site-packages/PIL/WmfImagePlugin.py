@@ -21,7 +21,6 @@
 
 from . import Image, ImageFile
 from ._binary import i16le as word
-from ._binary import i32le as dword
 from ._binary import si16le as short
 from ._binary import si32le as _long
 
@@ -110,9 +109,10 @@ class WmfStubImageFile(ImageFile.StubImageFile):
 
             # sanity check (standard metafile header)
             if s[22:26] != b"\x01\x00\t\x00":
-                raise SyntaxError("Unsupported WMF file format")
+                msg = "Unsupported WMF file format"
+                raise SyntaxError(msg)
 
-        elif dword(s) == 1 and s[40:44] == b" EMF":
+        elif s[:4] == b"\x01\x00\x00\x00" and s[40:44] == b" EMF":
             # enhanced metafile
 
             # get bounding box
@@ -127,8 +127,8 @@ class WmfStubImageFile(ImageFile.StubImageFile):
             size = x1 - x0, y1 - y0
 
             # calculate dots per inch from bbox and frame
-            xdpi = int(2540.0 * (x1 - y0) / (frame[2] - frame[0]) + 0.5)
-            ydpi = int(2540.0 * (y1 - y0) / (frame[3] - frame[1]) + 0.5)
+            xdpi = 2540.0 * (x1 - y0) / (frame[2] - frame[0])
+            ydpi = 2540.0 * (y1 - y0) / (frame[3] - frame[1])
 
             self.info["wmf_bbox"] = x0, y0, x1, y1
 
@@ -138,7 +138,8 @@ class WmfStubImageFile(ImageFile.StubImageFile):
                 self.info["dpi"] = xdpi, ydpi
 
         else:
-            raise SyntaxError("Unsupported file format")
+            msg = "Unsupported file format"
+            raise SyntaxError(msg)
 
         self.mode = "RGB"
         self._size = size
@@ -152,18 +153,19 @@ class WmfStubImageFile(ImageFile.StubImageFile):
 
     def load(self, dpi=None):
         if dpi is not None and self._inch is not None:
-            self.info["dpi"] = int(dpi + 0.5)
+            self.info["dpi"] = dpi
             x0, y0, x1, y1 = self.info["wmf_bbox"]
             self._size = (
                 (x1 - x0) * self.info["dpi"] // self._inch,
                 (y1 - y0) * self.info["dpi"] // self._inch,
             )
-        super().load()
+        return super().load()
 
 
 def _save(im, fp, filename):
     if _handler is None or not hasattr(_handler, "save"):
-        raise OSError("WMF save handler not installed")
+        msg = "WMF save handler not installed"
+        raise OSError(msg)
     _handler.save(im, fp, filename)
 
 

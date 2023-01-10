@@ -5,7 +5,6 @@ import tkinter as tk
 from tkinter import ttk
 from PIL import Image, ImageTk
 from datetime import datetime
-import pyperclip
 from io import BytesIO
 import win32clipboard
 
@@ -90,7 +89,6 @@ def add_entry():
 			avy_name = e1.get()
 
 			#check for errors
-			pyperclip.copy(text)
 			errors = []
 			if not avy_name:
 				errors.append("Please select an avatar.")

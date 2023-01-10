@@ -6,22 +6,21 @@
 #
 # history:
 # 2004-10-09 fl   Turned into a PIL plugin; removed 2.3 dependencies.
+# 2020-04-04      Allow saving on all operating systems.
 #
 # Copyright (c) 2004 by Bob Ippolito.
 # Copyright (c) 2004 by Secret Labs.
 # Copyright (c) 2004 by Fredrik Lundh.
 # Copyright (c) 2014 by Alastair Houghton.
+# Copyright (c) 2020 by Pan Jing.
 #
 # See the README file for information on usage and redistribution.
 #
 
 import io
 import os
-import shutil
 import struct
-import subprocess
 import sys
-import tempfile
 
 from PIL import Image, ImageFile, PngImagePlugin, features
 
@@ -29,6 +28,7 @@ enable_jpeg2k = features.check_codec("jpg_2000")
 if enable_jpeg2k:
     from PIL import Jpeg2KImagePlugin
 
+MAGIC = b"icns"
 HEADERSIZE = 8
 
 
@@ -42,7 +42,8 @@ def read_32t(fobj, start_length, size):
     fobj.seek(start)
     sig = fobj.read(4)
     if sig != b"\x00\x00\x00\x00":
-        raise SyntaxError("Unknown signature, expecting 0x00000000")
+        msg = "Unknown signature, expecting 0x00000000"
+        raise SyntaxError(msg)
     return read_32(fobj, (start + 4, length - 4), size)
 
 
@@ -82,7 +83,8 @@ def read_32(fobj, start_length, size):
                 if bytesleft <= 0:
                     break
             if bytesleft != 0:
-                raise SyntaxError(f"Error reading channel [{repr(bytesleft)} left]")
+                msg = f"Error reading channel [{repr(bytesleft)} left]"
+                raise SyntaxError(msg)
             band = Image.frombuffer("L", pixel_size, b"".join(data), "raw", "L", 0, 1)
             im.im.putband(band.im, band_ix)
     return {"RGB": im}
@@ -113,10 +115,11 @@ def read_png_or_jpeg2000(fobj, start_length, size):
         or sig == b"\x00\x00\x00\x0cjP  \x0d\x0a\x87\x0a"
     ):
         if not enable_jpeg2k:
-            raise ValueError(
+            msg = (
                 "Unsupported icon subimage format (rebuild PIL "
                 "with JPEG 2000 support to fix this)"
             )
+            raise ValueError(msg)
         # j2k, jpc or j2c
         fobj.seek(start)
         jp2kstream = fobj.read(length)
@@ -127,7 +130,8 @@ def read_png_or_jpeg2000(fobj, start_length, size):
             im = im.convert("RGBA")
         return {"RGBA": im}
     else:
-        raise ValueError("Unsupported icon subimage format")
+        msg = "Unsupported icon subimage format"
+        raise ValueError(msg)
 
 
 class IcnsFile:
@@ -167,13 +171,15 @@ class IcnsFile:
         self.dct = dct = {}
         self.fobj = fobj
         sig, filesize = nextheader(fobj)
-        if sig != b"icns":
-            raise SyntaxError("not an icns file")
+        if not _accept(sig):
+            msg = "not an icns file"
+            raise SyntaxError(msg)
         i = HEADERSIZE
         while i < filesize:
             sig, blocksize = nextheader(fobj)
             if blocksize <= 0:
-                raise SyntaxError("invalid block header")
+                msg = "invalid block header"
+                raise SyntaxError(msg)
             i += HEADERSIZE
             blocksize -= HEADERSIZE
             dct[sig] = (i, blocksize)
@@ -192,7 +198,8 @@ class IcnsFile:
     def bestsize(self):
         sizes = self.itersizes()
         if not sizes:
-            raise SyntaxError("No 32bit icon resources found")
+            msg = "No 32bit icon resources found"
+            raise SyntaxError(msg)
         return max(sizes)
 
     def dataforsize(self, size):
@@ -275,7 +282,8 @@ class IcnsImageFile(ImageFile.ImageFile):
             if value in simple_sizes:
                 info_size = self.info["sizes"][simple_sizes.index(value)]
         if info_size not in self.info["sizes"]:
-            raise ValueError("This is not one of the allowed sizes of this image")
+            msg = "This is not one of the allowed sizes of this image"
+            raise ValueError(msg)
         self._size = value
 
     def load(self):
@@ -286,92 +294,99 @@ class IcnsImageFile(ImageFile.ImageFile):
                 self.best_size[1] * self.best_size[2],
             )
 
-        Image.Image.load(self)
-        if self.im and self.im.size == self.size:
+        px = Image.Image.load(self)
+        if self.im is not None and self.im.size == self.size:
             # Already loaded
-            return
+            return px
         self.load_prepare()
         # This is likely NOT the best way to do it, but whatever.
         im = self.icns.getimage(self.best_size)
 
         # If this is a PNG or JPEG 2000, it won't be loaded yet
-        im.load()
+        px = im.load()
 
         self.im = im.im
         self.mode = im.mode
         self.size = im.size
-        self.load_end()
+
+        return px
 
 
 def _save(im, fp, filename):
     """
     Saves the image as a series of PNG files,
-    that are then converted to a .icns file
-    using the macOS command line utility 'iconutil'.
-
-    macOS only.
+    that are then combined into a .icns file.
     """
     if hasattr(fp, "flush"):
         fp.flush()
 
-    # create the temporary set of pngs
-    with tempfile.TemporaryDirectory(".iconset") as iconset:
-        provided_images = {
-            im.width: im for im in im.encoderinfo.get("append_images", [])
-        }
-        last_w = None
-        second_path = None
-        for w in [16, 32, 128, 256, 512]:
-            prefix = f"icon_{w}x{w}"
-
-            first_path = os.path.join(iconset, prefix + ".png")
-            if last_w == w:
-                shutil.copyfile(second_path, first_path)
-            else:
-                im_w = provided_images.get(w, im.resize((w, w), Image.LANCZOS))
-                im_w.save(first_path)
-
-            second_path = os.path.join(iconset, prefix + "@2x.png")
-            im_w2 = provided_images.get(w * 2, im.resize((w * 2, w * 2), Image.LANCZOS))
-            im_w2.save(second_path)
-            last_w = w * 2
-
-        # iconutil -c icns -o {} {}
-
-        fp_only = not filename
-        if fp_only:
-            f, filename = tempfile.mkstemp(".icns")
-            os.close(f)
-        convert_cmd = ["iconutil", "-c", "icns", "-o", filename, iconset]
-        convert_proc = subprocess.Popen(
-            convert_cmd, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL
+    sizes = {
+        b"ic07": 128,
+        b"ic08": 256,
+        b"ic09": 512,
+        b"ic10": 1024,
+        b"ic11": 32,
+        b"ic12": 64,
+        b"ic13": 256,
+        b"ic14": 512,
+    }
+    provided_images = {im.width: im for im in im.encoderinfo.get("append_images", [])}
+    size_streams = {}
+    for size in set(sizes.values()):
+        image = (
+            provided_images[size]
+            if size in provided_images
+            else im.resize((size, size))
         )
 
-        convert_proc.stdout.close()
+        temp = io.BytesIO()
+        image.save(temp, "png")
+        size_streams[size] = temp.getvalue()
 
-        retcode = convert_proc.wait()
+    entries = []
+    for type, size in sizes.items():
+        stream = size_streams[size]
+        entries.append(
+            {"type": type, "size": HEADERSIZE + len(stream), "stream": stream}
+        )
 
-        if retcode:
-            raise subprocess.CalledProcessError(retcode, convert_cmd)
+    # Header
+    fp.write(MAGIC)
+    file_length = HEADERSIZE  # Header
+    file_length += HEADERSIZE + 8 * len(entries)  # TOC
+    file_length += sum(entry["size"] for entry in entries)
+    fp.write(struct.pack(">i", file_length))
 
-        if fp_only:
-            with open(filename, "rb") as f:
-                fp.write(f.read())
+    # TOC
+    fp.write(b"TOC ")
+    fp.write(struct.pack(">i", HEADERSIZE + len(entries) * HEADERSIZE))
+    for entry in entries:
+        fp.write(entry["type"])
+        fp.write(struct.pack(">i", entry["size"]))
+
+    # Data
+    for entry in entries:
+        fp.write(entry["type"])
+        fp.write(struct.pack(">i", entry["size"]))
+        fp.write(entry["stream"])
+
+    if hasattr(fp, "flush"):
+        fp.flush()
 
 
-Image.register_open(IcnsImageFile.format, IcnsImageFile, lambda x: x[:4] == b"icns")
+def _accept(prefix):
+    return prefix[:4] == MAGIC
+
+
+Image.register_open(IcnsImageFile.format, IcnsImageFile, _accept)
 Image.register_extension(IcnsImageFile.format, ".icns")
 
-if sys.platform == "darwin":
-    Image.register_save(IcnsImageFile.format, _save)
-
-    Image.register_mime(IcnsImageFile.format, "image/icns")
-
+Image.register_save(IcnsImageFile.format, _save)
+Image.register_mime(IcnsImageFile.format, "image/icns")
 
 if __name__ == "__main__":
-
     if len(sys.argv) < 2:
-        print("Syntax: python IcnsImagePlugin.py [file]")
+        print("Syntax: python3 IcnsImagePlugin.py [file]")
         sys.exit()
 
     with open(sys.argv[1], "rb") as fp:
