@@ -1,5 +1,5 @@
 # WeChat Screenshot Generator
-A Tkinter GUI program written to generate WeChat screenshots. Offers support for Chinese characters, custom avatars and dark mode.
+A Tkinter GUI program written to generate WeChat screenshots. Offers support for Chinese characters, custom avatars and dark mode. The phone template used here is iPhone 11.
 
 ## Table of Contents
 * [Installation](#installation)
