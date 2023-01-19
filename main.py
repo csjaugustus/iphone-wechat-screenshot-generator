@@ -2,7 +2,7 @@ from image_processing import Screenshot
 import re
 import os
 import tkinter as tk
-from tkinter import ttk
+from tkinter import ttk, messagebox
 from PIL import Image, ImageTk
 from datetime import datetime
 from io import BytesIO
@@ -47,24 +47,6 @@ def update_preview():
 	image_preview_widget.image = image_preview
 	image_preview_widget.grid(row=2, column=0)
 
-def popup_message(title, message, window_to_close=None):
-	popup_window = tk.Toplevel()
-	popup_window.resizable(False, False)
-	popup_window.title(title)
-	if not window_to_close:
-		close = popup_window.destroy
-	elif window_to_close == 'all':
-		close = popup_window.quit
-	else:
-		def close():
-			popup_window.destroy()
-			window_to_close.destroy()
-	msg = ttk.Label(popup_window, text=message)
-	ok = ttk.Button(popup_window, text="Ok", command=close)
-	msg.pack(padx=10, pady=10)
-	ok.pack(padx=10, pady=10)
-
-
 def add_entry():
 	whitespace = re.compile("^\\s$")
 	def confirm():
@@ -77,7 +59,7 @@ def add_entry():
 			# elif not time_regex.findall(text):
 			#   errors.append("Please enter a valid time in such format xx:xx.")
 			if errors:
-				popup_message("Error", "\n".join(e for e in errors))
+				messagebox.showerror("Error", "\n".join(e for e in errors))
 				return
 
 			canvas.add_timestamp(text)
@@ -95,7 +77,7 @@ def add_entry():
 			if whitespace.findall(text):
 				errors.append("Please enter some text.")
 			if errors:
-				popup_message("Error", "\n".join(e for e in errors))
+				messagebox.showerror("Error", "\n".join(e for e in errors))
 				return
 
 			canvas.add(avy_name, text, side)
@@ -113,7 +95,7 @@ def add_entry():
 		e1.config(state=tk.DISABLED)
 
 	if not os.listdir("files\\avatars"):
-		popup_message("Error", "No avatar image found. Please add at least one avatar image in files\\avatars.")
+		messagebox.showerror("Error", "No avatar image found. Please add at least one avatar image in files\\avatars.")
 		return
 
 	add_window = tk.Toplevel()
@@ -181,8 +163,7 @@ def add_entry():
 def delete_entry():
 	selected_index = lb.curselection()
 	if not selected_index:
-		popup_message("Nothing selected",
-					 "Please select an entry to delete.")
+		messagebox.showerror("Nothing selected", "Please select an entry to delete.")
 	else:
 		selected_index = selected_index[0]
 		canvas.delete(selected_index)
@@ -195,7 +176,7 @@ def save_screenshot():
 	d = f"output\\SS-{get_timestamp()}.png"
 	current_canvas = canvas.get()
 	current_canvas.save(d)
-	popup_message("Successful", f"Saved under {d}.")
+	messagebox.showinfo("Successful", f"Saved under {d}.")
 
 
 def set_title():
@@ -293,7 +274,7 @@ def set_battery():
 	perc = battery_entry.get()
 	if perc:
 		if not perc.isdigit() or int(perc) < 1 or int(perc) > 100:
-			popup_message("Invalid Input", "Please enter a whole number between 1 and 100.")
+			messagebox.showerror("Invalid Input", "Please enter a whole number between 1 and 100.")
 			battery_entry.delete(0, tk.END)
 			return
 		else:
