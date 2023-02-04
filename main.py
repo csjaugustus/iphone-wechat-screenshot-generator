@@ -1,4 +1,4 @@
-from image_processing import Screenshot
+from image_processing import Chat
 import re
 import os
 import tkinter as tk
@@ -307,7 +307,7 @@ root.tk.call("source", "sun-valley.tcl")
 root.tk.call("set_theme", "light")
 root.resizable(False, False)
 
-canvas = Screenshot('light')
+canvas = Chat('light')
 current_canvas = canvas.get()
 w, h = current_canvas.size
 image_preview = current_canvas.resize((round(w/2.85), round(h/2.85)))
