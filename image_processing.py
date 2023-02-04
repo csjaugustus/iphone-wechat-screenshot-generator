@@ -331,6 +331,8 @@ class Moments():
         self.max_y = max(self.max_y, start_y+bubble_height+margin_to_likes+1)
 
     def get_cropped(self):
+        if self.max_y == 0:
+            return self.canvas.crop((0, 0, w, pyq_h))
         return self.canvas.crop((0, 0, w, self.max_y))
 
     def refresh(self):
@@ -866,7 +868,7 @@ likes_bar_w = 644
 heart_start_coords = (21, 18)
 likes_top_margin = 15
 likes_left_margin = 18
-likes_m2m = 40
+likes_m2m = 45
 likes_indentation = 40
 
 #images

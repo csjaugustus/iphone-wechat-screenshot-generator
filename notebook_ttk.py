@@ -62,18 +62,13 @@ class MomentsPage(ttk.Frame):
     def __init__(self, parent=None):
         super().__init__(parent)
 
-        self.avatar_is_set = False
-        self.name_is_set = False
-        self.post_text_is_set = False
-        self.likes_is_set = False
-
         self.setup_widgets()
 
     def setup_widgets(self):
         self.canvas = Moments('light')
         current_canvas = self.canvas.get()
         self.w, self.h = current_canvas.size
-        image_preview = current_canvas.resize((round(self.w/2.85), round(self.h/2.85)))
+        image_preview = current_canvas.resize((round(self.w/2.5), round(self.h/2.5)))
         image_preview = ImageTk.PhotoImage(image_preview)
         folder_icon = Image.open("files\\foldericon.png")
         folder_icon = folder_icon.resize((25,25))
@@ -105,15 +100,15 @@ class MomentsPage(ttk.Frame):
 
         img_frame = ttk.Frame(frame1)
         self.img_label = ttk.Label(img_frame, text="Add images (if any):")
-        self.lb = tk.Listbox(img_frame, height=10, width=50)
+        self.img_lb = tk.Listbox(img_frame, height=10, width=50)
         img_scrollbar = ttk.Scrollbar(img_frame, orient="vertical")
         add_img_button = ttk.Button(img_frame, text="Add", command=self.add_img)
         self.delete_img_button = ttk.Button(img_frame, text="Delete", command=self.delete_img)
 
         frame2 = ttk.Frame(self)
 
-        mode = tk.IntVar()
-        dark_mode_cb = ttk.Checkbutton(frame2, text="Dark Mode", variable=mode, style="Switch.TCheckbutton")
+        self.mode = tk.IntVar()
+        dark_mode_cb = ttk.Checkbutton(frame2, text="Dark Mode", variable=self.mode, style="Switch.TCheckbutton")
         dark_mode_cb.bind('<Button-1>', self.change_mode)
         self.image_preview_widget = ttk.Label(frame2, image=image_preview, borderwidth=2, relief="sunken")
         self.image_preview_widget.image = image_preview
@@ -131,16 +126,17 @@ class MomentsPage(ttk.Frame):
 
         comments_frame = ttk.Frame(frame3)
         comment_label = ttk.Label(comments_frame, text="Add comments (if any):")
-        self.comment_lb = tk.Listbox(comments_frame, height=10, width=50)
+        self.comments_lb = tk.Listbox(comments_frame, height=10, width=50)
         comments_scrollbar = ttk.Scrollbar(comments_frame, orient="vertical")
         add_comment_button = ttk.Button(comments_frame, text="Add", command=self.add_comment)
         self.delete_comment_button = ttk.Button(comments_frame, text="Delete", command=self.delete_comment)
 
-        # self.clear_button.config(state=tk.DISABLED)
-        # self.delete_img_button.config(state=tk.DISABLED)
-        # self.copy_button.config(state=tk.DISABLED)
-        # self.avatar_entry.config(state=tk.DISABLED)
-        # self.delete_comment_button.config(state=tk.DISABLED)
+        self.clear_button.config(state=tk.DISABLED)
+        self.delete_img_button.config(state=tk.DISABLED)
+        self.copy_button.config(state=tk.DISABLED)
+        self.avatar_entry.config(state=tk.DISABLED)
+        self.delete_comment_button.config(state=tk.DISABLED)
+        self.likes_delete_button.config(state=tk.DISABLED)
 
         frame1.grid(row=0, column=0, padx=10)
 
@@ -162,16 +158,16 @@ class MomentsPage(ttk.Frame):
         self.post_time_entry.grid(row=2, column=1, padx=5)
         self.post_time_button.grid(row=2, column=2, padx=5)
 
-        text_label.grid(row=0, column=0, columnspan=3, padx=5)
+        text_label.grid(row=0, column=0, columnspan=3, padx=5, pady=5)
         self.tb.grid(row=1, column=0, columnspan=3)
         tb_scrollbar.grid(row=1, column=3, sticky="ns")
         tb_scrollbar.config(command=self.tb.yview)
         self.confirm_button.grid(row=2, column=0, columnspan=3, padx=5, pady=5)
 
         self.img_label.grid(row=0, column=0, columnspan=3, padx=5, pady=5)
-        self.lb.grid(row=1,column=0, columnspan=3)
+        self.img_lb.grid(row=1,column=0, columnspan=3)
         img_scrollbar.grid(row=1, column=3, sticky="ns")
-        img_scrollbar.config(command=self.lb.yview)
+        img_scrollbar.config(command=self.img_lb.yview)
         add_img_button.grid(row=2, column=0, padx=5, pady=5)
         self.delete_img_button.grid(row=2,column=2, padx=5, pady=5)
 
@@ -193,10 +189,10 @@ class MomentsPage(ttk.Frame):
         likes_add_button.grid(row=2, column=1, pady=5)
         self.likes_delete_button.grid(row=2, column=2, pady=5)
 
-        comment_label.grid(row=0, column=0, columnspan=2)
-        self.comment_lb.grid(row=1, column=0, columnspan=2)
+        comment_label.grid(row=0, column=0, columnspan=2, pady=5)
+        self.comments_lb.grid(row=1, column=0, columnspan=2)
         comments_scrollbar.grid(row=1, column=2, sticky="ns")
-        comments_scrollbar.config(command=self.comment_lb.yview)
+        comments_scrollbar.config(command=self.comments_lb.yview)
         add_comment_button.grid(row=2, column=0, pady=5)
         self.delete_comment_button.grid(row=2, column=1, pady=5)
 
@@ -206,10 +202,6 @@ class MomentsPage(ttk.Frame):
         self.canvas.refresh()
         self.update_preview()
 
-        if post_time:
-            self.post_time_is_set = True
-        else:
-            self.post_time_is_set = False
         # self.update_button_states()
 
     def add_like(self):
@@ -223,11 +215,10 @@ class MomentsPage(ttk.Frame):
         self.canvas.refresh()
         self.update_preview()
 
-        if self.canvas.likes:
-            self.likes_is_set = True
+        self.update_button_states()
 
     def delete_like(self):
-        selected_index = self.lb.curselection()
+        selected_index = self.likes_lb.curselection()
         if not selected_index:
             messagebox.showerror("Nothing selected", "Please select an entry to delete.")
         else:
@@ -235,9 +226,10 @@ class MomentsPage(ttk.Frame):
             del self.canvas.likes[selected_index]
             self.likes_lb.delete(selected_index)
 
-            # self.update_button_states()
             self.canvas.refresh()
             self.update_preview()
+
+            self.update_button_states()
 
     def add_comment(self):
         def confirm():
@@ -263,10 +255,12 @@ class MomentsPage(ttk.Frame):
                     "text" : text,
                 }
 
-            self.canvas.set_comments()
-            self.comment_lb.insert(tk.END, text)
+            self.comments_lb.insert(tk.END, text)
             add_window.destroy()
+            self.canvas.refresh()
             self.update_preview()
+
+            self.update_button_states()
 
         add_window = tk.Toplevel()
         add_window.resizable(False, False)
@@ -299,17 +293,22 @@ class MomentsPage(ttk.Frame):
         confirm_button.grid(row=4, column=0, columnspan=2, pady=10)
 
     def delete_comment(self):
-        selected_index = self.lb.curselection()
+        selected_index = self.comments_lb.curselection()
         if not selected_index:
             messagebox.showerror("Nothing selected", "Please select an entry to delete.")
         else:
             selected_index = selected_index[0]
-            del self.canvas.comments[selected_index]
-            self.comment_lb.delete(selected_index)
+            value = self.comments_lb.get(selected_index)
+            for c in self.canvas.comments:
+                if self.canvas.comments[c]["text"] == value:
+                    del_key = c
+            del self.canvas.comments[del_key]
+            self.comments_lb.delete(selected_index)
 
-            # self.update_button_states()
             self.canvas.refresh()
             self.update_preview()
+
+            self.update_button_states()
 
     def set_text(self):
         post_text = self.tb.get("1.0", tk.END)
@@ -320,37 +319,27 @@ class MomentsPage(ttk.Frame):
         self.canvas.refresh()
         self.update_preview()
 
-        if post_text:
-            self.post_text_is_set = True
-        else:
-            self.post_text_is_set = False
-        # self.update_button_states()
+        self.update_button_states()
 
     def update_button_states(self):
-        if self.lb.get(0) or self.title_is_set or self.battery_is_set or self.system_time_is_set:
+        if self.canvas.max_y > 0:
+            self.copy_button.config(state=tk.NORMAL)
             self.clear_button.config(state=tk.NORMAL)
 
-            if self.lb.get(0):
-                self.delete_button.config(state=tk.NORMAL)
-                self.copy_without_name_button.config(state=tk.NORMAL)
-
-                if self.title_is_set and self.battery_is_set and self.system_time_is_set:
-                    self.copy_with_name_button.config(state=tk.NORMAL)
-                    self.save_button.config(state=tk.NORMAL)
-                else:
-                    self.copy_with_name_button.config(state=tk.DISABLED)
-                    self.save_button.config(state=tk.DISABLED)
-
-            else:
-                self.save_button.config(state=tk.DISABLED)
-                self.copy_with_name_button.config(state=tk.DISABLED)
-                self.copy_without_name_button.config(state=tk.DISABLED)
+        if self.img_lb.get(0, tk.END):
+            self.delete_img_button.config(state=tk.NORMAL)
         else:
-            self.clear_button.config(state=tk.DISABLED)
-            self.delete_button.config(state=tk.DISABLED)
-            self.save_button.config(state=tk.DISABLED)
-            self.copy_with_name_button.config(state=tk.DISABLED)
-            self.copy_without_name_button.config(state=tk.DISABLED)
+            self.delete_img_button.config(state=tk.DISABLED)
+
+        if self.likes_lb.get(0, tk.END):
+            self.likes_delete_button.config(state=tk.NORMAL)
+        else:
+            self.likes_delete_button.config(state=tk.DISABLED)
+
+        if self.comments_lb.get(0, tk.END):
+            self.delete_comment_button.config(state=tk.NORMAL)
+        else:
+            self.delete_comment_button.config(state=tk.DISABLED)
 
     def get_timestamp(self):
         now = datetime.now()
@@ -360,7 +349,7 @@ class MomentsPage(ttk.Frame):
     def update_preview(self):
         current_canvas = self.canvas.get_cropped()
         ccw, cch = current_canvas.size
-        image_preview = current_canvas.resize((round(ccw/2.85), round(cch/2.85)))
+        image_preview = current_canvas.resize((round(ccw/2.5), round(cch/2.5)))
         image_preview = ImageTk.PhotoImage(image_preview)
         self.image_preview_widget.configure(image=image_preview)
         self.image_preview_widget.image = image_preview
@@ -369,25 +358,28 @@ class MomentsPage(ttk.Frame):
     def add_img(self):
         files = open_images()
         for f in files:
-            self.lb.insert(tk.END, f)
+            self.img_lb.insert(tk.END, f)
             img = Image.open(f)
             img = ImageOps.exif_transpose(img)
             self.canvas.images.append(img)
         self.canvas.refresh()
         self.update_preview()
 
+        self.update_button_states()
+
     def delete_img(self):
-        selected_index = self.lb.curselection()
+        selected_index = self.img_lb.curselection()
         if not selected_index:
             messagebox.showerror("Nothing selected", "Please select an entry to delete.")
         else:
             selected_index = selected_index[0]
             del self.canvas.images[selected_index]
-            self.lb.delete(selected_index)
+            self.img_lb.delete(selected_index)
 
-            # self.update_button_states()
             self.canvas.refresh()
             self.update_preview()
+
+            self.update_button_states()
 
     def set_name(self):
         name = self.name_entry.get()
@@ -395,11 +387,7 @@ class MomentsPage(ttk.Frame):
         self.canvas.refresh()
         self.update_preview()
 
-        if name:
-            self.name_is_set = True
-        else:
-            self.name_is_set = False
-        # self.update_button_states()
+        self.update_button_states()
 
     def set_avatar(self):
         def confirm():
@@ -415,9 +403,9 @@ class MomentsPage(ttk.Frame):
             self.avatar_entry.config(state=tk.NORMAL)
             self.avatar_entry.insert(0, avy_name)
             self.avatar_entry.config(state=tk.DISABLED)
-            # self.update_button_states()
 
             self.update_preview()
+            self.update_button_states()
 
         def select_avatar(x):
             e1.config(state=tk.NORMAL)
@@ -481,18 +469,21 @@ class MomentsPage(ttk.Frame):
     def clear(self):
         def clear_screen():
             confirmation.destroy()
-            self.canvas.entries.clear()
-            self.canvas.entries_dark.clear()
-            self.lb.delete(0,'end')
-            self.canvas.set_title("")
-            self.canvas.set_system_time("")
-            self.canvas.battery = ""
-            self.canvas.set_battery(self.canvas.battery)
-            title_is_set = False
-            system_time_is_set = False
-            battery_is_set = False
-            self.canvas.update()
+            self.canvas = Moments("light")
             self.update_preview()
+
+            self.avatar_entry.config(state=tk.NORMAL)
+            self.avatar_entry.delete(0, tk.END)
+            self.avatar_entry.config(state=tk.DISABLED)
+            self.name_entry.delete(0, tk.END)
+            self.post_time_entry.delete(0, tk.END)
+            self.tb.delete("1.0", tk.END)
+            self.img_lb.delete(0, tk.END)
+            self.likes_lb.delete(0, tk.END)
+            self.comments_lb.delete(0, tk.END)
+            self.mode.set(0)
+
+            self.update_button_states()
 
         confirmation = tk.Toplevel()
         confirmation.resizable(False, False)
@@ -518,18 +509,13 @@ class MomentsPage(ttk.Frame):
 class ChatPage(ttk.Frame):
     def __init__(self, parent=None):
         super().__init__(parent)
-
-        self.system_time_is_set = False
-        self.title_is_set = False
-        self.battery_is_set = False
-
         self.setup_widgets()
 
     def setup_widgets(self):
         self.canvas = Chat('light')
         current_canvas = self.canvas.get()
         self.w, self.h = current_canvas.size
-        image_preview = current_canvas.resize((round(self.w/2.85), round(self.h/2.85)))
+        image_preview = current_canvas.resize((round(self.w/2.5), round(self.h/2.5)))
         image_preview = ImageTk.PhotoImage(image_preview)
         folder_icon = Image.open("files\\foldericon.png")
         folder_icon = folder_icon.resize((25,25))
@@ -537,8 +523,8 @@ class ChatPage(ttk.Frame):
 
         frame1 = ttk.Frame(self)
 
-        mode = tk.IntVar()
-        dark_mode_cb = ttk.Checkbutton(frame1, text="Dark Mode", variable=mode, style="Switch.TCheckbutton")
+        self.mode = tk.IntVar()
+        dark_mode_cb = ttk.Checkbutton(frame1, text="Dark Mode", variable=self.mode, style="Switch.TCheckbutton")
         dark_mode_cb.bind('<Button-1>', self.change_mode)
         self.image_preview_widget = ttk.Label(frame1, image=image_preview, borderwidth=2, relief="sunken")
         self.image_preview_widget.image = image_preview
@@ -563,7 +549,7 @@ class ChatPage(ttk.Frame):
         set_title_button = ttk.Button(info_frame, text="Set", command=self.set_title)
 
         entry_frame = ttk.Frame(frame2)
-        self.lb = tk.Listbox(entry_frame, height=28, width=50)
+        self.img_lb = tk.Listbox(entry_frame, height=28, width=50)
         lb_scrollbar = ttk.Scrollbar(entry_frame, orient="vertical")
         add_button = ttk.Button(entry_frame, text="Add", command=self.add_entry)
         self.delete_button = ttk.Button(entry_frame, text="Delete", command=self.delete_entry)
@@ -574,7 +560,7 @@ class ChatPage(ttk.Frame):
         top_label = ttk.Label(top_frame, text="Preview w/ Name")
         top_preview = self.canvas.get_cropped_from_top()
         tpw, tph = top_preview.size
-        top_preview = top_preview.resize((round(tpw/2.85), round(tph/2.85)))
+        top_preview = top_preview.resize((round(tpw/2.5), round(tph/2.5)))
         top_preview = ImageTk.PhotoImage(top_preview)
         self.crop_from_top_preview = ttk.Label(top_frame, image=top_preview, borderwidth=2, relief="sunken")
         self.crop_from_top_preview.image = top_preview
@@ -584,7 +570,7 @@ class ChatPage(ttk.Frame):
         bottom_label = ttk.Label(bottom_frame, text="Preview w/o Name")
         bottom_preview = self.canvas.get_cropped_from_bottom()
         bpw, bph = bottom_preview.size
-        bottom_preview = bottom_preview.resize((round(bpw/2.85), round(bph/2.85)))
+        bottom_preview = bottom_preview.resize((round(bpw/2.5), round(bph/2.5)))
         bottom_preview = ImageTk.PhotoImage(bottom_preview)
         self.crop_from_bottom_preview = ttk.Label(bottom_frame, image=bottom_preview, borderwidth=2, relief="sunken")
         self.crop_from_bottom_preview.image = bottom_preview
@@ -620,9 +606,9 @@ class ChatPage(ttk.Frame):
         self.title_entry.grid(row=2,column=1)
         set_title_button.grid(row=2, column=2, padx=5)
 
-        self.lb.grid(row=0,column=0, columnspan=3)
+        self.img_lb.grid(row=0,column=0, columnspan=3)
         lb_scrollbar.grid(row=0, column=3, sticky="ns")
-        lb_scrollbar.config(command=self.lb.yview)
+        lb_scrollbar.config(command=self.img_lb.yview)
         add_button.grid(row=1, column=0, padx=10, pady=5)
         self.delete_button.grid(row=1, column=2, padx=5, pady=5)
 
@@ -640,14 +626,14 @@ class ChatPage(ttk.Frame):
 
 
     def update_button_states(self):
-        if self.lb.get(0) or self.title_is_set or self.battery_is_set or self.system_time_is_set:
+        if self.img_lb.get(0) or self.canvas.title or self.canvas.battery or self.canvas.system_time:
             self.clear_button.config(state=tk.NORMAL)
 
-            if self.lb.get(0):
+            if self.img_lb.get(0):
                 self.delete_button.config(state=tk.NORMAL)
                 self.copy_without_name_button.config(state=tk.NORMAL)
 
-                if self.title_is_set and self.battery_is_set and self.system_time_is_set:
+                if self.canvas.title and self.canvas.battery and self.canvas.system_time:
                     self.copy_with_name_button.config(state=tk.NORMAL)
                     self.save_button.config(state=tk.NORMAL)
                 else:
@@ -672,7 +658,7 @@ class ChatPage(ttk.Frame):
 
     def update_preview(self):
         current_canvas = self.canvas.get()
-        image_preview = current_canvas.resize((round(self.w/2.85), round(self.h/2.85)))
+        image_preview = current_canvas.resize((round(self.w/2.5), round(self.h/2.5)))
         image_preview = ImageTk.PhotoImage(image_preview)
         self.image_preview_widget.configure(image=image_preview)
         self.image_preview_widget.image = image_preview
@@ -680,7 +666,7 @@ class ChatPage(ttk.Frame):
 
         top_preview = self.canvas.get_cropped_from_top()
         tpw, tph = top_preview.size
-        top_preview = top_preview.resize((round(tpw/2.85), round(tph/2.85)))
+        top_preview = top_preview.resize((round(tpw/2.5), round(tph/2.5)))
         top_preview = ImageTk.PhotoImage(top_preview)
         self.crop_from_top_preview.configure(image=top_preview)
         self.crop_from_top_preview.image = top_preview
@@ -688,7 +674,7 @@ class ChatPage(ttk.Frame):
 
         bottom_preview = self.canvas.get_cropped_from_bottom()
         bpw, bph = bottom_preview.size
-        bottom_preview = bottom_preview.resize((round(bpw/2.85), round(bph/2.85)))
+        bottom_preview = bottom_preview.resize((round(bpw/2.5), round(bph/2.5)))
         bottom_preview = ImageTk.PhotoImage(bottom_preview)
         self.crop_from_bottom_preview.configure(image=bottom_preview)
         self.crop_from_bottom_preview.image = bottom_preview
@@ -732,7 +718,7 @@ class ChatPage(ttk.Frame):
                 self.canvas.add(avy_name, text, side)
                 add_window.destroy()
 
-            self.lb.insert(tk.END, text)
+            self.img_lb.insert(tk.END, text)
             self.update_button_states()
 
             self.update_preview()
@@ -810,13 +796,13 @@ class ChatPage(ttk.Frame):
 
 
     def delete_entry(self):
-        selected_index = self.lb.curselection()
+        selected_index = self.img_lb.curselection()
         if not selected_index:
             messagebox.showerror("Nothing selected", "Please select an entry to delete.")
         else:
             selected_index = selected_index[0]
             self.canvas.delete(selected_index)
-            self.lb.delete(selected_index)
+            self.img_lb.delete(selected_index)
 
             self.update_button_states()
             self.update_preview()
@@ -833,10 +819,6 @@ class ChatPage(ttk.Frame):
         self.canvas.set_title(title)
         self.update_preview()
 
-        if title:
-            self.title_is_set = True
-        else:
-            self.title_is_set = False
         self.update_button_states()
 
     def set_system_time(self):
@@ -844,10 +826,6 @@ class ChatPage(ttk.Frame):
         self.canvas.set_system_time(time)
         self.update_preview()
 
-        if time:
-            self.system_time_is_set = True
-        else:
-            self.system_time_is_set = False
         self.update_button_states()
 
     def copy_with_name(self):
@@ -866,14 +844,9 @@ class ChatPage(ttk.Frame):
             confirmation.destroy()
             self.canvas.entries.clear()
             self.canvas.entries_dark.clear()
-            self.lb.delete(0,'end')
-            self.canvas.set_title("")
-            self.canvas.set_system_time("")
-            self.canvas.battery = ""
-            self.canvas.set_battery(self.canvas.battery)
-            self.title_is_set = False
-            self.system_time_is_set = False
-            self.battery_is_set = False
+            self.img_lb.delete(0,'end')
+            self.canvas = Chat('light')
+            self.mode.set(0)
             self.canvas.update()
             self.update_preview()
             self.update_button_states()
@@ -911,13 +884,7 @@ class ChatPage(ttk.Frame):
         self.canvas.set_battery(perc)
         self.update_preview()
 
-        if perc:
-            self.battery_is_set = True
-        else:
-            self.battery_is_set = False
         self.update_button_states()
-
-
 
 if __name__ == "__main__":
     root = tk.Tk()
